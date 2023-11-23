@@ -1,2 +1,1 @@
-# TapOFT 🍹 🤙
-
+[YieldBox](https://github.com/Tapioca-DAO/YieldBox) contracts with Tapioca project architecture
