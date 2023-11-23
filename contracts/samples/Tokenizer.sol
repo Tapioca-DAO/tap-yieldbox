@@ -15,8 +15,8 @@ contract Tokenizer {
         uint256 assetId = tokenizedAsset[sourceAsset];
         if (assetId == 0) {
             yieldBox.createToken(
-                string(string.concat("Tokenized ", bytes(yieldBox.name(sourceAsset)))),
-                string(string.concat("t", bytes(yieldBox.symbol(sourceAsset)))),
+                string(string.concat("Tokenized ", yieldBox.name(sourceAsset))),
+                string(string.concat("t", yieldBox.symbol(sourceAsset))),
                 18,
                 ""
             );
