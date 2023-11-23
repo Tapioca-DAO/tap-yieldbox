@@ -53,15 +53,6 @@ const config: HardhatUserConfig & { dodoc: any } = {
     solidity: {
         compilers: [
             {
-                version: '0.4.24',
-                settings: {
-                    optimizer: {
-                        enabled: true,
-                        runs: 100,
-                    },
-                },
-            },
-            {
                 version: '0.8.18',
                 settings: {
                     viaIR: process.env.NODE_ENV == 'coverage' ? false : true,
