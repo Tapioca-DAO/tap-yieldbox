@@ -1,0 +1,11 @@
+{
+    "default": {
+        "421613": [
+            {
+                "name": "TapiocaDeployer",
+                "address": "0x6128a40744f4405EB95D8F315CeC014bf335A728",
+                "meta": {}
+            }
+        ]
+    }
+}
