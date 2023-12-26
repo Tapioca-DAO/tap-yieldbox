@@ -146,8 +146,6 @@ contract YieldBox is YieldBoxPermit, BoringBatchable, NativeTokenFactory, ERC721
             amount = share._toAmount(totalSupply[assetId], totalAmount, true);
         }
 
-        _mint(to, assetId, share);
-
         // Interactions
         if (asset.tokenType == TokenType.ERC20) {
             // For ERC20 tokens, use the safe helper function to deal with broken ERC20 implementations. This actually calls transferFrom on the ERC20 contract.
@@ -161,6 +159,7 @@ contract YieldBox is YieldBoxPermit, BoringBatchable, NativeTokenFactory, ERC721
                 IERC1155(asset.contractAddress).safeTransferFrom(from, address(asset.strategy), asset.tokenId, amount, "");
             }
         }
+        _mint(to, assetId, share);
 
         asset.strategy.deposited(amount);
 
