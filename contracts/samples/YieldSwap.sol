@@ -27,22 +27,45 @@ contract YieldSwap {
     mapping(uint256 => mapping(uint256 => uint256)) public pairLookup;
 
     event Mint(address indexed sender, uint256 amount0, uint256 amount1);
-    event Burn(address indexed sender, uint256 amount0, uint256 amount1, address indexed to);
-    event Swap(address indexed sender, uint256 amount0In, uint256 amount1In, uint256 amount0Out, uint256 amount1Out, address indexed to);
+    event Burn(
+        address indexed sender,
+        uint256 amount0,
+        uint256 amount1,
+        address indexed to
+    );
+    event Swap(
+        address indexed sender,
+        uint256 amount0In,
+        uint256 amount1In,
+        uint256 amount0Out,
+        uint256 amount1Out,
+        address indexed to
+    );
     event Sync(uint112 reserve0, uint112 reserve1);
 
-    function create(uint32 asset0, uint32 asset1) public returns (uint256 pairId) {
+    function create(
+        uint32 asset0,
+        uint32 asset1
+    ) public returns (uint256 pairId) {
         if (asset0 > asset1) {
             (asset0, asset1) = (asset1, asset0);
         }
 
-        uint32 lpAssetId = yieldBox.createToken("YieldBox LP Token", "YLP", 18, "");
+        uint32 lpAssetId = yieldBox.createToken(
+            "YieldBox LP Token",
+            "YLP",
+            18,
+            ""
+        );
         pairId = pairs.length;
         pairLookup[asset0][asset1] = pairId;
         pairs.push(Pair(0, 0, asset0, asset1, lpAssetId, 0));
     }
 
-    function mint(uint256 pairId, address to) external returns (uint256 liquidity) {
+    function mint(
+        uint256 pairId,
+        address to
+    ) external returns (uint256 liquidity) {
         Pair storage pair = pairs[pairId];
 
         uint256 balance0 = yieldBox.balanceOf(address(this), pair.asset0);
@@ -55,7 +78,10 @@ contract YieldSwap {
             liquidity = Math.sqrt(amount0 * amount1) - MINIMUM_LIQUIDITY;
             yieldBox.mint(pair.lpAssetId, address(0), MINIMUM_LIQUIDITY);
         } else {
-            liquidity = Math.min((amount0 * _totalSupply) / pair.reserve0, (amount1 * _totalSupply) / pair.reserve1);
+            liquidity = Math.min(
+                (amount0 * _totalSupply) / pair.reserve0,
+                (amount1 * _totalSupply) / pair.reserve1
+            );
         }
         require(liquidity > 0, "YieldSwap: Not enough mint");
         yieldBox.mint(pair.lpAssetId, to, liquidity);
@@ -64,7 +90,10 @@ contract YieldSwap {
         pair.reserve1 = balance1.to128();
     }
 
-    function burn(uint256 pairId, address to) external returns (uint256 share0, uint256 share1) {
+    function burn(
+        uint256 pairId,
+        address to
+    ) external returns (uint256 share0, uint256 share1) {
         Pair storage pair = pairs[pairId];
 
         uint256 balance0 = yieldBox.balanceOf(address(this), pair.asset0);
@@ -83,11 +112,19 @@ contract YieldSwap {
         pair.reserve1 = yieldBox.balanceOf(address(this), pair.asset1).to128();
     }
 
-    function swap(uint256 pairId, uint256 share0Out, uint256 share1Out, address to) external {
+    function swap(
+        uint256 pairId,
+        uint256 share0Out,
+        uint256 share1Out,
+        address to
+    ) external {
         Pair storage pair = pairs[pairId];
 
         require(share0Out > 0 || share1Out > 0, "YieldSwap: Output too low");
-        require(share0Out < pair.reserve0 && share1Out < pair.reserve1, "YieldSwap: Liquidity too low");
+        require(
+            share0Out < pair.reserve0 && share1Out < pair.reserve1,
+            "YieldSwap: Liquidity too low"
+        );
 
         yieldBox.transfer(address(this), to, pair.asset0, share0Out);
         yieldBox.transfer(address(this), to, pair.asset1, share1Out);
@@ -95,10 +132,17 @@ contract YieldSwap {
         uint256 balance0 = yieldBox.balanceOf(address(this), pair.asset0);
         uint256 balance1 = yieldBox.balanceOf(address(this), pair.asset1);
 
-        uint256 share0In = balance0 > pair.reserve0 - share0Out ? balance0 - (pair.reserve0 - share0Out) : 0;
-        uint256 share1In = balance1 > pair.reserve1 - share1Out ? balance1 - (pair.reserve1 - share1Out) : 0;
+        uint256 share0In = balance0 > pair.reserve0 - share0Out
+            ? balance0 - (pair.reserve0 - share0Out)
+            : 0;
+        uint256 share1In = balance1 > pair.reserve1 - share1Out
+            ? balance1 - (pair.reserve1 - share1Out)
+            : 0;
         require(share0In > 0 || share1In > 0, "YieldSwap: No input");
-        require(balance0 * balance1 >= pair.reserve0 * pair.reserve1, "YieldSwap: K");
+        require(
+            balance0 * balance1 >= pair.reserve0 * pair.reserve1,
+            "YieldSwap: K"
+        );
 
         pair.reserve0 = balance0.to128();
         pair.reserve1 = balance1.to128();
@@ -108,8 +152,18 @@ contract YieldSwap {
     function skim(uint256 pairId, address to) external {
         Pair storage pair = pairs[pairId];
 
-        yieldBox.transfer(address(this), to, pair.asset0, yieldBox.balanceOf(address(this), pair.asset0) - pair.reserve0);
-        yieldBox.transfer(address(this), to, pair.asset1, yieldBox.balanceOf(address(this), pair.asset1) - pair.reserve1);
+        yieldBox.transfer(
+            address(this),
+            to,
+            pair.asset0,
+            yieldBox.balanceOf(address(this), pair.asset0) - pair.reserve0
+        );
+        yieldBox.transfer(
+            address(this),
+            to,
+            pair.asset1,
+            yieldBox.balanceOf(address(this), pair.asset1) - pair.reserve1
+        );
     }
 
     // force reserves to match balances
