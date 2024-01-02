@@ -9,15 +9,24 @@ contract YieldBoxRebaseMock {
     uint256 public totalAmount;
     uint256 public totalShares;
 
-    function toShare(uint256 amount, bool roundUp) public view returns (uint256 share) {
+    function toShare(
+        uint256 amount,
+        bool roundUp
+    ) public view returns (uint256 share) {
         share = amount._toShares(totalShares, totalAmount, roundUp);
     }
 
-    function toAmount(uint256 share, bool roundUp) public view returns (uint256 amount) {
+    function toAmount(
+        uint256 share,
+        bool roundUp
+    ) public view returns (uint256 amount) {
         amount = share._toAmount(totalShares, totalAmount, roundUp);
     }
 
-    function deposit(uint256 share, uint256 amount) public returns (uint256 shareOut, uint256 amountOut) {
+    function deposit(
+        uint256 share,
+        uint256 amount
+    ) public returns (uint256 shareOut, uint256 amountOut) {
         if (share == 0) {
             // value of the share may be lower than the amount due to rounding, that's ok
             share = amount._toShares(totalShares, totalAmount, false);
@@ -30,7 +39,10 @@ contract YieldBoxRebaseMock {
         return (share, amount);
     }
 
-    function withdraw(uint256 share, uint256 amount) public returns (uint256 shareOut, uint256 amountOut) {
+    function withdraw(
+        uint256 share,
+        uint256 amount
+    ) public returns (uint256 shareOut, uint256 amountOut) {
         if (share == 0) {
             // value of the share paid could be lower than the amount paid due to rounding, in that case, add a share (Always round up)
             share = amount._toShares(totalShares, totalAmount, true);

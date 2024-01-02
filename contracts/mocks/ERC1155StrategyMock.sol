@@ -20,11 +20,7 @@ contract ERC1155StrategyMock is IStrategy, ERC1155TokenReceiver {
 
     IYieldBox public immutable yieldBox;
 
-    constructor(
-        IYieldBox yieldBox_,
-        address token,
-        uint256 tokenId_
-    ) {
+    constructor(IYieldBox yieldBox_, address token, uint256 tokenId_) {
         yieldBox = yieldBox_;
         contractAddress = token;
         tokenId = tokenId_;
@@ -46,7 +42,12 @@ contract ERC1155StrategyMock is IStrategy, ERC1155TokenReceiver {
     /// Returns the maximum amount that can be withdrawn for a low gas fee
     /// When more than this amount is withdrawn it will trigger divesting from the actual strategy
     /// which will incur higher gas costs
-    function cheapWithdrawable() external view override returns (uint256 amount) {
+    function cheapWithdrawable()
+        external
+        view
+        override
+        returns (uint256 amount)
+    {
         return IERC1155(contractAddress).balanceOf(address(this), tokenId);
     }
 
@@ -62,6 +63,12 @@ contract ERC1155StrategyMock is IStrategy, ERC1155TokenReceiver {
     /// the strategy should divest enough from the strategy to complete the withdrawal and rebalance the reserve.
     /// Only accept this call from the YieldBox
     function withdraw(address to, uint256 amount) external override {
-        IERC1155(contractAddress).safeTransferFrom(address(this), to, tokenId, amount, "");
+        IERC1155(contractAddress).safeTransferFrom(
+            address(this),
+            to,
+            tokenId,
+            amount,
+            ""
+        );
     }
 }

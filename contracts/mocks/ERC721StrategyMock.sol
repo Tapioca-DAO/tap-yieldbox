@@ -43,7 +43,12 @@ contract ERC721StrategyMock is IStrategy, ERC721Receiver {
     /// Returns the maximum amount that can be withdrawn for a low gas fee
     /// When more than this amount is withdrawn it will trigger divesting from the actual strategy
     /// which will incur higher gas costs
-    function cheapWithdrawable() external view override returns (uint256 amount) {
+    function cheapWithdrawable()
+        external
+        view
+        override
+        returns (uint256 amount)
+    {
         return IERC721(contractAddress).balanceOf(address(this));
     }
 

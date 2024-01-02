@@ -15,7 +15,11 @@ contract ReturnFalseERC20Mock {
     mapping(address => uint256) public nonces;
 
     event Transfer(address indexed _from, address indexed _to, uint256 _value);
-    event Approval(address indexed _owner, address indexed _spender, uint256 _value);
+    event Approval(
+        address indexed _owner,
+        address indexed _spender,
+        uint256 _value
+    );
 
     constructor(
         string memory name_,
@@ -30,8 +34,14 @@ contract ReturnFalseERC20Mock {
         balanceOf[msg.sender] = supply;
     }
 
-    function transfer(address to, uint256 amount) public returns (bool success) {
-        if (balanceOf[msg.sender] >= amount && balanceOf[to] + amount >= balanceOf[to]) {
+    function transfer(
+        address to,
+        uint256 amount
+    ) public returns (bool success) {
+        if (
+            balanceOf[msg.sender] >= amount &&
+            balanceOf[to] + amount >= balanceOf[to]
+        ) {
             balanceOf[msg.sender] -= amount;
             balanceOf[to] += amount;
             emit Transfer(msg.sender, to, amount);
@@ -46,7 +56,11 @@ contract ReturnFalseERC20Mock {
         address to,
         uint256 amount
     ) public returns (bool success) {
-        if (balanceOf[from] >= amount && allowance[from][msg.sender] >= amount && balanceOf[to] + amount >= balanceOf[to]) {
+        if (
+            balanceOf[from] >= amount &&
+            allowance[from][msg.sender] >= amount &&
+            balanceOf[to] + amount >= balanceOf[to]
+        ) {
             balanceOf[from] -= amount;
             allowance[from][msg.sender] -= amount;
             balanceOf[to] += amount;
@@ -57,7 +71,10 @@ contract ReturnFalseERC20Mock {
         }
     }
 
-    function approve(address spender, uint256 amount) public returns (bool success) {
+    function approve(
+        address spender,
+        uint256 amount
+    ) public returns (bool success) {
         allowance[msg.sender][spender] = amount;
         emit Approval(msg.sender, spender, amount);
         return true;
@@ -69,7 +86,16 @@ contract ReturnFalseERC20Mock {
         assembly {
             chainId := chainid()
         }
-        return keccak256(abi.encode(keccak256("EIP712Domain(uint256 chainId,address verifyingContract)"), chainId, address(this)));
+        return
+            keccak256(
+                abi.encode(
+                    keccak256(
+                        "EIP712Domain(uint256 chainId,address verifyingContract)"
+                    ),
+                    chainId,
+                    address(this)
+                )
+            );
     }
 
     function permit(

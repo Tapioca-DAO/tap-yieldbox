@@ -29,7 +29,12 @@ contract ERC1155ReceiverMock is IERC1155TokenReceiver {
         data = _data;
         fromBalance = ERC1155(sender).balanceOf(from, id);
 
-        return bytes4(keccak256("onERC1155Received(address,address,uint256,uint256,bytes)"));
+        return
+            bytes4(
+                keccak256(
+                    "onERC1155Received(address,address,uint256,uint256,bytes)"
+                )
+            );
     }
 
     function onERC1155BatchReceived(
@@ -49,7 +54,12 @@ contract ERC1155ReceiverMock is IERC1155TokenReceiver {
             fromBalance = ERC1155(sender).balanceOf(from, ids[0]);
         }
 
-        return bytes4(keccak256("onERC1155BatchReceived(address,address,uint256[],uint256[],bytes)"));
+        return
+            bytes4(
+                keccak256(
+                    "onERC1155BatchReceived(address,address,uint256[],uint256[],bytes)"
+                )
+            );
     }
 
     function returnToken() external {
@@ -57,7 +67,13 @@ contract ERC1155ReceiverMock is IERC1155TokenReceiver {
     }
 
     function returnTokens() external {
-        ERC1155(sender).safeBatchTransferFrom(address(this), from, ids, values, "");
+        ERC1155(sender).safeBatchTransferFrom(
+            address(this),
+            from,
+            ids,
+            values,
+            ""
+        );
     }
 }
 

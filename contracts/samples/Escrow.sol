@@ -26,13 +26,25 @@ contract Escrow {
         uint256 shareFrom,
         uint256 shareTo
     ) public {
-        offers.push(Offer(msg.sender, assetFrom, assetTo, shareFrom, shareTo, false));
+        offers.push(
+            Offer(msg.sender, assetFrom, assetTo, shareFrom, shareTo, false)
+        );
     }
 
     function take(uint256 offerId) public {
         Offer memory offer = offers[offerId];
-        yieldBox.transfer(msg.sender, offer.owner, offer.assetFrom, offer.shareFrom);
-        yieldBox.transfer(offer.owner, msg.sender, offer.assetTo, offer.shareTo);
+        yieldBox.transfer(
+            msg.sender,
+            offer.owner,
+            offer.assetFrom,
+            offer.shareFrom
+        );
+        yieldBox.transfer(
+            offer.owner,
+            msg.sender,
+            offer.assetTo,
+            offer.shareTo
+        );
         offers[offerId].closed = true;
     }
 

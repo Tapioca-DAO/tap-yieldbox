@@ -24,9 +24,14 @@ abstract contract YieldBoxPermit is EIP712 {
     mapping(address => Counters.Counter) private _nonces;
 
     bytes32 private constant _PERMIT_TYPEHASH =
-        keccak256("Permit(address owner,address spender,uint256 assetId,uint256 nonce,uint256 deadline)");
+        keccak256(
+            "Permit(address owner,address spender,uint256 assetId,uint256 nonce,uint256 deadline)"
+        );
 
-    bytes32 private constant _PERMIT_ALL_TYPEHASH = keccak256("PermitAll(address owner,address spender,uint256 nonce,uint256 deadline)");
+    bytes32 private constant _PERMIT_ALL_TYPEHASH =
+        keccak256(
+            "PermitAll(address owner,address spender,uint256 nonce,uint256 deadline)"
+        );
 
     /**
      * @dev Initializes the {EIP712} domain separator using the `name` parameter, and setting `version` to `"1"`.
@@ -35,18 +40,55 @@ abstract contract YieldBoxPermit is EIP712 {
      */
     constructor(string memory name) EIP712(name, "1") {}
 
-    function permit(address owner, address spender, uint256 assetId, uint256 deadline, uint8 v, bytes32 r, bytes32 s) public virtual {
+    function permit(
+        address owner,
+        address spender,
+        uint256 assetId,
+        uint256 deadline,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) public virtual {
         _permit(owner, spender, assetId, deadline, v, r, s, true);
     }
 
-    function revoke(address owner, address spender, uint256 assetId, uint256 deadline, uint8 v, bytes32 r, bytes32 s) public virtual {
+    function revoke(
+        address owner,
+        address spender,
+        uint256 assetId,
+        uint256 deadline,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) public virtual {
         _permit(owner, spender, assetId, deadline, v, r, s, false);
     }
 
-    function _permit(address owner, address spender, uint256 assetId, uint256 deadline, uint8 v, bytes32 r, bytes32 s, bool state) private {
-        require(block.timestamp <= deadline, "YieldBoxPermit: expired deadline");
+    function _permit(
+        address owner,
+        address spender,
+        uint256 assetId,
+        uint256 deadline,
+        uint8 v,
+        bytes32 r,
+        bytes32 s,
+        bool state
+    ) private {
+        require(
+            block.timestamp <= deadline,
+            "YieldBoxPermit: expired deadline"
+        );
 
-        bytes32 structHash = keccak256(abi.encode(_PERMIT_TYPEHASH, owner, spender, assetId, _useNonce(owner), deadline));
+        bytes32 structHash = keccak256(
+            abi.encode(
+                _PERMIT_TYPEHASH,
+                owner,
+                spender,
+                assetId,
+                _useNonce(owner),
+                deadline
+            )
+        );
 
         bytes32 hash = _hashTypedDataV4(structHash);
 
@@ -56,20 +98,58 @@ abstract contract YieldBoxPermit is EIP712 {
         _setApprovalForAsset(owner, spender, assetId, state);
     }
 
-    function _setApprovalForAsset(address owner, address spender, uint256 assetId, bool approved) internal virtual;
+    function _setApprovalForAsset(
+        address owner,
+        address spender,
+        uint256 assetId,
+        bool approved
+    ) internal virtual;
 
-    function permitAll(address owner, address spender, uint256 deadline, uint8 v, bytes32 r, bytes32 s) public virtual {
+    function permitAll(
+        address owner,
+        address spender,
+        uint256 deadline,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) public virtual {
         _permitAll(owner, spender, deadline, v, r, s, true);
     }
 
-    function revokeAll(address owner, address spender, uint256 deadline, uint8 v, bytes32 r, bytes32 s) public virtual {
+    function revokeAll(
+        address owner,
+        address spender,
+        uint256 deadline,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) public virtual {
         _permitAll(owner, spender, deadline, v, r, s, false);
     }
 
-    function _permitAll(address owner, address spender, uint256 deadline, uint8 v, bytes32 r, bytes32 s, bool state) private {
-        require(block.timestamp <= deadline, "YieldBoxPermit: expired deadline");
+    function _permitAll(
+        address owner,
+        address spender,
+        uint256 deadline,
+        uint8 v,
+        bytes32 r,
+        bytes32 s,
+        bool state
+    ) private {
+        require(
+            block.timestamp <= deadline,
+            "YieldBoxPermit: expired deadline"
+        );
 
-        bytes32 structHash = keccak256(abi.encode(_PERMIT_ALL_TYPEHASH, owner, spender, _useNonce(owner), deadline));
+        bytes32 structHash = keccak256(
+            abi.encode(
+                _PERMIT_ALL_TYPEHASH,
+                owner,
+                spender,
+                _useNonce(owner),
+                deadline
+            )
+        );
 
         bytes32 hash = _hashTypedDataV4(structHash);
 
@@ -79,7 +159,11 @@ abstract contract YieldBoxPermit is EIP712 {
         _setApprovalForAll(owner, spender, state);
     }
 
-    function _setApprovalForAll(address _owner, address operator, bool approved) internal virtual;
+    function _setApprovalForAll(
+        address _owner,
+        address operator,
+        bool approved
+    ) internal virtual;
 
     /**
      * @dev See {IERC20Permit-nonces}.
@@ -100,7 +184,9 @@ abstract contract YieldBoxPermit is EIP712 {
      * @dev "Consume a nonce": return the current value and increment.
      *
      */
-    function _useNonce(address owner) internal virtual returns (uint256 current) {
+    function _useNonce(
+        address owner
+    ) internal virtual returns (uint256 current) {
         Counters.Counter storage nonce = _nonces[owner];
         current = nonce.current();
         nonce.increment();

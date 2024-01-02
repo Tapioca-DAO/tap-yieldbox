@@ -14,7 +14,10 @@ import "./BaseStrategy.sol";
 contract ERC20WithoutStrategy is BaseERC20Strategy {
     using BoringERC20 for IERC20;
 
-    constructor(IYieldBox _yieldBox, IERC20 token) BaseERC20Strategy(_yieldBox, address(token)) {}
+    constructor(
+        IYieldBox _yieldBox,
+        IERC20 token
+    ) BaseERC20Strategy(_yieldBox, address(token)) {}
 
     string public constant override name = "No strategy";
     string public constant override description = "No strategy";
