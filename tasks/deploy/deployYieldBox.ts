@@ -1,8 +1,4 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { IDeployerVMAdd } from 'tapioca-sdk/dist/ethers/hardhat/DeployerVM';
-import { MockSwapper__factory } from '../../gitsub_tapioca-sdk/src/typechain/tapioca-mocks';
-import MockSwapperArtifact from '../../gitsub_tapioca-sdk/src/artifacts/tapioca-mocks/MockSwapper.json';
-import { EChainID } from '../../gitsub_tapioca-sdk/src/api/config';
 import { buildYieldBox } from '../builds/buildYieldBox';
 
 export const loadVM = async (
@@ -24,7 +20,7 @@ export const deployYieldBox__task = async (
     {},
     hre: HardhatRuntimeEnvironment,
 ) => {
-    console.log('[+] Deploying: MockSwapper');
+    console.log('[+] Deploying: YieldBox');
     const tag = await hre.SDK.hardhatUtils.askForTag(hre, 'local');
     const VM = await loadVM(hre, tag);
 
