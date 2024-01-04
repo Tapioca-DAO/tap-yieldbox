@@ -30,6 +30,13 @@
         ],
         "421614": [
             {
+                "name": "WETHMock",
+                "address": "0x3022494EFafC433b64B704dCbAD69ec0cf54B941",
+                "meta": {
+                    "isERC20Mock": true
+                }
+            },
+            {
                 "name": "TapiocaDeployer",
                 "address": "0x8147313b6469B53fF8c6ac089DcC9F54729aEaaf",
                 "meta": {}
