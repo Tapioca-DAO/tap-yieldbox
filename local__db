@@ -28,6 +28,13 @@
                 "meta": {}
             }
         ],
+        "421614": [
+            {
+                "name": "TapiocaDeployer",
+                "address": "0x8147313b6469B53fF8c6ac089DcC9F54729aEaaf",
+                "meta": {}
+            }
+        ],
         "11155111": [
             {
                 "name": "YieldBoxURIBuilder",
