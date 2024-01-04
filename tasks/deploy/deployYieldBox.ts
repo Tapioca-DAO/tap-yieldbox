@@ -46,10 +46,11 @@ export const deployYieldBox__task = async (
             .loadLocalDeployment(tag, chainInfo.chainId)
             .find((e) => e.name.startsWith('WETHMock'));
     }
-    if (weth) {
-        const [ybURI, yieldBox] = await buildYieldBox(hre, weth.address);
-        VM.add(ybURI).add(yieldBox);
+    if (!weth) {
+        throw new Error('WETHMock not found');
     }
+    const [ybURI, yieldBox] = await buildYieldBox(hre, weth.address);
+    VM.add(ybURI).add(yieldBox);
 
     await VM.execute(3);
     VM.save();
