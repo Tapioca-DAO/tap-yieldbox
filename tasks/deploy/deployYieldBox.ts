@@ -1,5 +1,7 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { buildYieldBox } from '../builds/buildYieldBox';
+import { buildERC20Mock } from '../builds/buildERC20Mock';
+import { TChainIdDeployment } from 'tapioca-sdk/dist/shared';
 
 export const loadVM = async (
     hre: HardhatRuntimeEnvironment,
@@ -24,6 +26,8 @@ export const deployYieldBox__task = async (
     const tag = await hre.SDK.hardhatUtils.askForTag(hre, 'local');
     const VM = await loadVM(hre, tag);
 
+    const isTestnet = hre.network.tags['testnet'];
+
     const chainInfo = hre.SDK.utils.getChainBy(
         'chainId',
         await hre.getChainId(),
@@ -32,22 +36,40 @@ export const deployYieldBox__task = async (
         throw new Error('Chain not found');
     }
 
-    let weth = hre.SDK.db
-        .loadGlobalDeployment(
+    let weth = (
+        hre.SDK.db.loadGlobalDeployment(
             tag,
             hre.SDK.config.TAPIOCA_PROJECTS_NAME.TapiocaMocks,
             chainInfo.chainId,
-        )
-        .find((e) => e.name.startsWith('WETHMock'));
+        ) as TChainIdDeployment | undefined
+    )?.contracts.find((e) => e.name.startsWith('WETHMock'));
 
     if (!weth) {
         //try to take it again from local deployment
-        weth = hre.SDK.db
-            .loadLocalDeployment(tag, chainInfo.chainId)
-            .find((e) => e.name.startsWith('WETHMock'));
+        weth = (
+            hre.SDK.db.loadLocalDeployment(tag, chainInfo.chainId) as
+                | TChainIdDeployment
+                | undefined
+        )?.contracts.find((e) => e.name.startsWith('WETHMock'));
     }
     if (!weth) {
-        throw new Error('WETHMock not found');
+        // Revert if mainnet
+        if (!isTestnet) {
+            throw new Error('[-] WETH not found');
+        }
+        console.log('[-] WETH not found, deploying it on testnet');
+        // Deploy it
+        const depWeth = await (
+            await (
+                await hre.ethers.getContractFactory('ERC20Mock')
+            ).deploy((1e18).toString())
+        ).deployed();
+        weth = {
+            name: 'WETHMock',
+            address: depWeth.address,
+            meta: {},
+        };
+        console.log(`[+] WETH deployed at ${weth.address}`);
     }
     const [ybURI, yieldBox] = await buildYieldBox(hre, weth.address);
     VM.add(ybURI).add(yieldBox);
