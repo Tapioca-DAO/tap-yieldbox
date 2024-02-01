@@ -6,7 +6,11 @@
     "esModuleInterop": true,
     "outDir": "dist",
     "declaration": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "paths": {
+      "@tapioca-sdk/*": ["gitmodule/tapioca-sdk/src/*"],
+      "@typechain/*": ["gen/typechain/*"],
+    }
   },
   "include": [
     "./hardhat.config.ts",
