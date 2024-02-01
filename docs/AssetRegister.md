@@ -101,7 +101,7 @@ function balanceOfBatch(address[] owners, uint256[] ids) external view returns (
 ### ids
 
 ```solidity
-function ids(enum TokenType, address, contract IStrategy, uint256) external view returns (uint256)
+function ids(enum TokenType tokenType, address contractAddress, contract IStrategy strategy, uint256 tokenId) external view returns (uint256 assetId)
 ```
 
 
@@ -112,16 +112,16 @@ function ids(enum TokenType, address, contract IStrategy, uint256) external view
 
 | Name | Type | Description |
 |---|---|---|
-| _0 | enum TokenType | undefined |
-| _1 | address | undefined |
-| _2 | contract IStrategy | undefined |
-| _3 | uint256 | undefined |
+| tokenType | enum TokenType | undefined |
+| contractAddress | address | undefined |
+| strategy | contract IStrategy | undefined |
+| tokenId | uint256 | undefined |
 
 #### Returns
 
 | Name | Type | Description |
 |---|---|---|
-| _0 | uint256 | undefined |
+| assetId | uint256 | undefined |
 
 ### isApprovedForAll
 
