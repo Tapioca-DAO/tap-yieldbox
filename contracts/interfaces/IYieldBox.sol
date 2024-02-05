@@ -2,9 +2,16 @@
 pragma solidity ^0.8.9;
 pragma experimental ABIEncoderV2;
 
-import "../enums/YieldBoxTokenType.sol";
+import {TokenType} from "../enums/YieldBoxTokenType.sol";
 
 interface IYieldBox {
+    function registerAsset(
+        TokenType tokenType,
+        address contractAddress,
+        address strategy,
+        uint256 tokenId
+    ) external returns (uint256 assetId);
+
     function wrappedNative() external view returns (address wrappedNative);
 
     function assets(
