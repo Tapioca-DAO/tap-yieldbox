@@ -1,0 +1,25 @@
+[profile.default]
+src = 'contracts'
+out = 'gen/out'
+libs = ['node_modules', 'lib']
+test = 'test'
+cache_path  = 'gen/cache_forge'
+
+solc_version='0.8.22'
+evm_version='paris'
+optimizer = true
+optimizer_runs = 1000
+
+
+remappings = [
+	"yieldbox/=contracts/"
+]
+
+# forge-dpeloy
+fs_permissions = [
+	{ access = "read-write", path = "./deployments"},
+	{ access = "read", path = "./out"}
+]
+
+[etherscan]
+arbitrum-sepolia = { key = "${ARBITRUM_SEPOLIA_API_KEY}", url = "https://api-sepolia.arbiscan.io/api"}
