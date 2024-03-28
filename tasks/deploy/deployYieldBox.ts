@@ -1,7 +1,5 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { buildYieldBox } from '../builds/buildYieldBox';
-import { buildERC20Mock } from '../builds/buildERC20Mock';
-import { TChainIdDeployment } from 'tapioca-sdk/dist/shared';
 
 export const loadVM = async (
     hre: HardhatRuntimeEnvironment,

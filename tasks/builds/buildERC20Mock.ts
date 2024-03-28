@@ -1,6 +1,6 @@
+import { ERC20Mock__factory } from '@typechain/index';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { IDeployerVMAdd } from 'tapioca-sdk/dist/ethers/hardhat/DeployerVM';
-import { ERC20Mock__factory } from '../../typechain';
 
 export const buildERC20Mock = async (
     hre: HardhatRuntimeEnvironment,

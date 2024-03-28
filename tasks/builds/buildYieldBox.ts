@@ -1,9 +1,11 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { IDeployerVMAdd } from 'tapioca-sdk/dist/ethers/hardhat/DeployerVM';
+
+import { DEPLOYMENT_NAMES } from '../deploy/DEPLOY_CONFIG';
 import {
     YieldBoxURIBuilder__factory,
     YieldBox__factory,
-} from '../../typechain';
+} from '@typechain/index';
 
 // TODO - Put WETH9 in params for prod
 export const buildYieldBox = async (
@@ -24,12 +26,12 @@ export const buildYieldBox = async (
     return [
         {
             contract: YieldBoxURIBuilder,
-            deploymentName: 'YieldBoxURIBuilder',
+            deploymentName: DEPLOYMENT_NAMES.YieldBoxURIBuilder,
             args: [],
         },
         {
             contract: YieldBox,
-            deploymentName: 'YieldBox',
+            deploymentName: DEPLOYMENT_NAMES.YieldBox,
             args: [
                 weth,
                 // YieldBoxURIBuilder, to be replaced by VM
