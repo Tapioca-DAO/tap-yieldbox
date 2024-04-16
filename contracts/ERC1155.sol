@@ -86,6 +86,8 @@ contract ERC1155 is IERC1155 {
         uint256 len = ids.length;
         for (uint256 i; i < len; i++) {
             uint256 id = ids[i];
+            _requireTransferAllowed(from, isApprovedForAsset[from][msg.sender][id]);
+            
             uint256 value = values[i];
             balanceOf[from][id] -= value;
             balanceOf[to][id] += value;
