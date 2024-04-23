@@ -27,10 +27,18 @@ abstract contract YieldBoxPermit is EIP712 {
         keccak256(
             "Permit(address owner,address spender,uint256 assetId,uint256 nonce,uint256 deadline)"
         );
+    bytes32 private constant _REVOKE_TYPEHASH =
+        keccak256(
+            "Revoke(address owner,address spender,uint256 assetId,uint256 nonce,uint256 deadline)"
+        );
 
     bytes32 private constant _PERMIT_ALL_TYPEHASH =
         keccak256(
             "PermitAll(address owner,address spender,uint256 nonce,uint256 deadline)"
+        );
+    bytes32 private constant _REVOKE_ALL_TYPEHASH =
+        keccak256(
+            "RevokeAll(address owner,address spender,uint256 nonce,uint256 deadline)"
         );
 
     /**
@@ -81,7 +89,7 @@ abstract contract YieldBoxPermit is EIP712 {
 
         bytes32 structHash = keccak256(
             abi.encode(
-                _PERMIT_TYPEHASH,
+                state ? _PERMIT_TYPEHASH : _REVOKE_TYPEHASH,
                 owner,
                 spender,
                 assetId,
@@ -143,7 +151,7 @@ abstract contract YieldBoxPermit is EIP712 {
 
         bytes32 structHash = keccak256(
             abi.encode(
-                _PERMIT_ALL_TYPEHASH,
+                state ? _PERMIT_ALL_TYPEHASH : _REVOKE_ALL_TYPEHASH,
                 owner,
                 spender,
                 _useNonce(owner),
