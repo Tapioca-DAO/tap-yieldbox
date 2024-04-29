@@ -1,5 +1,8 @@
 import '@nomiclabs/hardhat-ethers';
-import { task } from 'hardhat/config';
+import { scope } from 'hardhat/config';
+import { TAP_TASK } from 'tapioca-sdk';
 import { deployYieldBox__task } from './tasks/deploy/deployYieldBox';
 
-task('deployYieldBox', 'Deploy YieldBox', deployYieldBox__task);
+const deployScope = scope('deploys', 'Deployment tasks');
+
+TAP_TASK(deployScope.task('yieldBox', 'Deploy YieldBox', deployYieldBox__task));

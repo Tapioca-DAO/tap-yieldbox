@@ -1,56 +1,36 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
+import {
+    TTapiocaDeployTaskArgs,
+    TTapiocaDeployerVmPass,
+} from 'tapioca-sdk/dist/ethers/hardhat/DeployerVM';
 import { buildYieldBox } from '../builds/buildYieldBox';
-
-export const loadVM = async (
-    hre: HardhatRuntimeEnvironment,
-    tag: string,
-    debugMode = true,
-) => {
-    const VM = new hre.SDK.DeployerVM(hre, {
-        // Change this if you get bytecode size error / gas required exceeds allowance (550000000)/ anything related to bytecode size
-        // Could be different by network/RPC provider
-        bytecodeSizeLimit: 80_000,
-        debugMode,
-        tag,
-    });
-    return VM;
-};
+import { DEPLOY_CONFIG } from './DEPLOY_CONFIG';
 
 export const deployYieldBox__task = async (
-    {},
+    _taskArgs: TTapiocaDeployTaskArgs,
     hre: HardhatRuntimeEnvironment,
 ) => {
-    console.log('[+] Deploying: YieldBox');
-    const tag = await hre.SDK.hardhatUtils.askForTag(hre, 'local');
-    const VM = await loadVM(hre, tag);
-    const chainInfo = hre.SDK.utils.getChainBy('chainId', hre.SDK.eChainId);
-    if (chainInfo === undefined) throw new Error('[-] Chain not supported');
+    await hre.SDK.DeployerVM.tapiocaDeployTask(
+        _taskArgs,
+        {
+            hre,
+            // Static simulation needs to be false, constructor relies on external call. We're using 0x00 replacement with DeployerVM, which creates a false positive for static simulation.
+            staticSimulation: false,
+        },
+        tapiocaDeployTask,
+    );
+};
 
-    const isTestnet = chainInfo.tags.find((e) => e === 'testnet') !== undefined;
+async function tapiocaDeployTask(params: TTapiocaDeployerVmPass<object>) {
+    const { hre, VM } = params;
 
-    // TODO Put WETH address in a config file
-    // Revert if mainnet
-    if (!isTestnet) {
-        throw new Error('[-] WETH not found');
-    }
-    console.log('[-] WETH not found, deploying it on testnet');
-    // Deploy it
-    const depWeth = await (
-        await (
-            await hre.ethers.getContractFactory('ERC20Mock')
-        ).deploy((1e18).toString())
-    ).deployed();
-    const weth = {
-        name: 'WETHMock',
-        address: depWeth.address,
-        meta: {},
-    };
-    console.log(`[+] WETH deployed at ${weth.address}`);
-
-    const [ybURI, yieldBox] = await buildYieldBox(hre, weth.address);
+    const [ybURI, yieldBox] = await buildYieldBox(
+        hre,
+        DEPLOY_CONFIG.MISC[hre.SDK.eChainId]!.WETH!,
+    );
     VM.add(ybURI).add(yieldBox);
 
     await VM.execute(3);
     await VM.save();
     await VM.verify();
-};
+}
