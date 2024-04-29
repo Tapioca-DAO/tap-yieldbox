@@ -29,8 +29,4 @@ async function tapiocaDeployTask(params: TTapiocaDeployerVmPass<object>) {
         DEPLOY_CONFIG.MISC[hre.SDK.eChainId]!.WETH!,
     );
     VM.add(ybURI).add(yieldBox);
-
-    await VM.execute(3);
-    await VM.save();
-    await VM.verify();
 }
