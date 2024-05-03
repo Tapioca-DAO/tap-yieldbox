@@ -42,6 +42,7 @@ import "./YieldBoxURIBuilder.sol";
 import "./YieldBoxPermit.sol";
 
 import {Pearlmit} from "tapioca-periph/pearlmit/Pearlmit.sol";
+import {OZOwnable} from "./OZOwnable.sol";
 
 // solhint-disable no-empty-blocks
 
@@ -50,7 +51,14 @@ import {Pearlmit} from "tapioca-periph/pearlmit/Pearlmit.sol";
 /// @notice The YieldBox is a vault for tokens. The stored tokens can assigned to strategies.
 /// Yield from this will go to the token depositors.
 /// Any funds transfered directly onto the YieldBox will be lost, use the deposit function instead.
-contract YieldBox is YieldBoxPermit, BoringBatchable, NativeTokenFactory, ERC721TokenReceiver, ERC1155TokenReceiver {
+contract YieldBox is
+    YieldBoxPermit,
+    BoringBatchable,
+    NativeTokenFactory,
+    ERC721TokenReceiver,
+    ERC1155TokenReceiver,
+    OZOwnable
+{
     using BoringAddress for address;
     using BoringERC20 for IERC20;
     using BoringERC20 for IWrappedNative;
@@ -102,12 +110,13 @@ contract YieldBox is YieldBoxPermit, BoringBatchable, NativeTokenFactory, ERC721
     YieldBoxURIBuilder public immutable uriBuilder;
     Pearlmit public pearlmit;
 
-    constructor(IWrappedNative wrappedNative_, YieldBoxURIBuilder uriBuilder_, Pearlmit pearlmit_)
+    constructor(IWrappedNative wrappedNative_, YieldBoxURIBuilder uriBuilder_, Pearlmit pearlmit_, address owner_)
         YieldBoxPermit("YieldBox")
     {
         wrappedNative = wrappedNative_;
         uriBuilder = uriBuilder_;
         pearlmit = pearlmit_;
+        _transferOwnership(owner_);
     }
 
     // ************************** //
@@ -535,5 +544,15 @@ contract YieldBox is YieldBoxPermit, BoringBatchable, NativeTokenFactory, ERC721
         returns (uint256 amountOut, uint256 shareOut)
     {
         return depositETHAsset(registerAsset(TokenType.ERC20, address(wrappedNative), strategy, 0), to, amount);
+    }
+
+    // ******************* //
+    //    *** OWNER ***    //
+    // ******************* //
+
+    /// @notice Set the Pearlmit contract
+    /// @param pearlmit_ The new Pearlmit contract address
+    function setPearlmit(Pearlmit pearlmit_) external onlyContractOwner {
+        pearlmit = pearlmit_;
     }
 }
