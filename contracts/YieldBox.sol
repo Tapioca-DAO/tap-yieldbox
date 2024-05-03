@@ -101,6 +101,7 @@ contract YieldBox is
     error NotSet();
     error ForbiddenAction();
     error AssetNotValid();
+    error PearlmitTransferFailed();
 
     // ******************* //
     // *** CONSTRUCTOR *** //
@@ -165,17 +166,39 @@ contract YieldBox is
 
         // Interactions
         if (asset.tokenType == TokenType.ERC20) {
-            // For ERC20 tokens, use the safe helper function to deal with broken ERC20 implementations. This actually calls transferFrom on the ERC20 contract.
-            IERC20(asset.contractAddress).safeTransferFrom(from, address(asset.strategy), amount);
+            (uint256 allowedAmount,) = pearlmit.allowance(from, address(this), asset.contractAddress, 0);
+
+            // Check whether the tokens are Pearlmit approved
+            if (allowedAmount >= amount) {
+                // If approved, use the Pearlmit transfer function
+                bool isErr = pearlmit.transferFromERC20(from, address(asset.strategy), asset.contractAddress, amount);
+                if (isErr) revert PearlmitTransferFailed();
+            } else {
+                // If not approved through Pearlmit, use the token transfer function
+                // For ERC20 tokens, use the safe helper function to deal with broken ERC20 implementations. This actually calls transferFrom on the ERC20 contract.
+                IERC20(asset.contractAddress).safeTransferFrom(from, address(asset.strategy), amount);
+            }
         } else {
             // ERC1155
             // When depositing yieldBox tokens into the yieldBox, things can be simplified
             if (asset.contractAddress == address(this)) {
                 _transferSingle(from, address(asset.strategy), asset.tokenId, amount);
             } else {
-                IERC1155(asset.contractAddress).safeTransferFrom(
-                    from, address(asset.strategy), asset.tokenId, amount, ""
-                );
+                (uint256 allowedAmount,) = pearlmit.allowance(from, address(this), asset.contractAddress, asset.tokenId);
+
+                // Check whether the tokens are Pearlmit approved
+                if (allowedAmount >= amount) {
+                    // If approved, use the Pearlmit transfer function
+                    bool isErr = pearlmit.transferFromERC1155(
+                        from, address(asset.strategy), asset.contractAddress, asset.tokenId, amount
+                    );
+                    if (isErr) revert PearlmitTransferFailed();
+                } else {
+                    // If not approved through Pearlmit, use the token transfer function
+                    IERC1155(asset.contractAddress).safeTransferFrom(
+                        from, address(asset.strategy), asset.tokenId, amount, ""
+                    );
+                }
             }
         }
 
@@ -205,7 +228,18 @@ contract YieldBox is
         _mint(to, assetId, 1);
 
         // Interactions
-        IERC721(asset.contractAddress).safeTransferFrom(from, address(asset.strategy), asset.tokenId);
+        (uint256 allowedAmount,) = pearlmit.allowance(from, address(this), asset.contractAddress, asset.tokenId);
+
+        // Check whether the tokens are Pearlmit approved
+        if (allowedAmount > 0) {
+            // If approved, use the Pearlmit transfer function
+            bool isErr =
+                pearlmit.transferFromERC721(from, address(asset.strategy), asset.contractAddress, asset.tokenId);
+            if (isErr) revert PearlmitTransferFailed();
+        } else {
+            // If not approved through Pearlmit, use the token transfer function
+            IERC721(asset.contractAddress).safeTransferFrom(from, address(asset.strategy), asset.tokenId);
+        }
 
         asset.strategy.deposited(1);
 
