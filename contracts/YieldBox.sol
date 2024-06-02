@@ -166,7 +166,7 @@ contract YieldBox is
 
         // Interactions
         if (asset.tokenType == TokenType.ERC20) {
-            (uint256 allowedAmount,) = pearlmit.allowance(from, address(this), asset.contractAddress, 0);
+            (uint256 allowedAmount,) = pearlmit.allowance(from, address(this), 20, asset.contractAddress, 0);
 
             // Check whether the tokens are Pearlmit approved
             if (allowedAmount >= amount) {
@@ -184,7 +184,8 @@ contract YieldBox is
             if (asset.contractAddress == address(this)) {
                 _transferSingle(from, address(asset.strategy), asset.tokenId, amount);
             } else {
-                (uint256 allowedAmount,) = pearlmit.allowance(from, address(this), asset.contractAddress, asset.tokenId);
+                (uint256 allowedAmount,) =
+                    pearlmit.allowance(from, address(this), 1155, asset.contractAddress, asset.tokenId);
 
                 // Check whether the tokens are Pearlmit approved
                 if (allowedAmount >= amount) {
@@ -228,7 +229,7 @@ contract YieldBox is
         _mint(to, assetId, 1);
 
         // Interactions
-        (uint256 allowedAmount,) = pearlmit.allowance(from, address(this), asset.contractAddress, asset.tokenId);
+        (uint256 allowedAmount,) = pearlmit.allowance(from, address(this), 721, asset.contractAddress, asset.tokenId);
 
         // Check whether the tokens are Pearlmit approved
         if (allowedAmount > 0) {
