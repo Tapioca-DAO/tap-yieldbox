@@ -41,7 +41,7 @@ import "./YieldBoxRebase.sol";
 import "./YieldBoxURIBuilder.sol";
 import "./YieldBoxPermit.sol";
 
-import {Pearlmit} from "tapioca-periph/pearlmit/Pearlmit.sol";
+import {Pearlmit} from "tap-utils/pearlmit/Pearlmit.sol";
 import {OZOwnable} from "./OZOwnable.sol";
 
 // solhint-disable no-empty-blocks
