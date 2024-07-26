@@ -12,9 +12,8 @@ optimizer_runs = 1000
 
 
 remappings = [
-	"yieldbox/=contracts/",
-	'tapioca-periph/=gitmodule/tapioca-periph/contracts/',
-	"permitc/=gitmodule/tapioca-periph/gitmodule/permitc/src/", # Needs to be init in the periph repo
+	'tap-utils/=lib/tap-utils/contracts/',
+	"permitc/=lib/tap-utils/lib/permitc/src/", # Needs to be init in the periph repo
 ]
 
 # forge-dpeloy
