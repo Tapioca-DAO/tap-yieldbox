@@ -1,0 +1,20 @@
+transfer.t.sol
+├── when `from` is not `msg.sender`
+│   ├── when `msg.sender` is not approved by `from` for asset
+│   │   ├── when `msg.sender` is not approved by `from` for all
+│   │   │   └── it should revert
+│   │   └── it continues execution
+│   └── it continues execution
+└── it CONTINUES
+    ├── when asset is not registered in YieldBox 
+    │   └── it should revert
+    └──  when asset is registered in YieldBox
+        └── when `to` is address(0)
+        │   └── it should revert
+        └── when `to` is not address(0)
+            └── when `value` transferred is greater than `from` `balanceOf`
+                └── it should revert
+                └── when `value` transferred is smaller or equal to `from`'s `balanceOf`
+                    ├── it should decrement `balanceOf` `from` by `value`
+                    ├── it should increment `balanceOf` `to` by `value`
+                    └── it should emit `TransferSingle` event

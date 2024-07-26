@@ -1,0 +1,20 @@
+depositETHAsset.t.sol
+├── when `assetId` is not ERC20
+│   └── it should revert
+└── when `assetId` is ERC20
+    ├── when `assetId`'s `contractAddress` is not `wrappedNative`
+    │   └── it should revert
+    └── when `assetId`'s `contractAddress` is `wrappedNative`
+        ├── when `amount` is greater than `msg.value`
+        │   └── it should revert
+        └── when `amount` is not greater than `msg.value` 
+            ├── it should round `shares` down
+            ├── it should emit `TransferSingle` event
+            ├── it should mint converted `shares` to `to`
+            ├── it should increase `strategy`'s `wrappedNative` balance by `amount`
+            ├── it should emit `Deposited` event
+            └── when assets are refunded
+                ├── when low-level call fails
+                │   └── it should revert
+                └── when low-level call fails
+                    └── it should return excess of assets to caller

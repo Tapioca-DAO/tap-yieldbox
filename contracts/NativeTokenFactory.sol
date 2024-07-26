@@ -46,13 +46,13 @@ contract NativeTokenFactory is AssetRegister {
     /// If 'from' is msg.sender, it's allowed.
     /// If 'msg.sender' is an address (an operator) that is approved by 'from', it's allowed.
     modifier allowed(address _from, uint256 _id) {
-        _requireTransferAllowed(
+        _requireTransferAllowed(  
             _from,
             isApprovedForAsset[_from][msg.sender][_id]
-        );
+        ); 
         _;
-    }
-
+    }  
+ 
     /// @notice Only allows the `owner` to execute the function.
     /// @param tokenId The `tokenId` that the sender has to be owner of.
     modifier onlyOwner(uint256 tokenId) {

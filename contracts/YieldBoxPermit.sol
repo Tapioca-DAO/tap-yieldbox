@@ -18,11 +18,11 @@ import "./interfaces/IYieldBox.sol";
  * presenting a message signed by the account. By not relying on `{IERC721-approve}`, the token holder account doesn't
  * need to send a transaction, and thus is not required to hold Ether at all.
  */
-abstract contract YieldBoxPermit is EIP712 {
+abstract contract YieldBoxPermit is EIP712 { 
     using Counters for Counters.Counter;
 
     mapping(address => Counters.Counter) private _nonces;
-
+ 
     bytes32 private constant _PERMIT_TYPEHASH =
         keccak256(
             "Permit(address owner,address spender,uint256 assetId,uint256 nonce,uint256 deadline)"
@@ -47,7 +47,7 @@ abstract contract YieldBoxPermit is EIP712 {
      * It's a good idea to use the same `name` that is defined as the ERC721 token name.
      */
     constructor(string memory name) EIP712(name, "1") {}
-
+ 
     function permit(
         address owner,
         address spender,

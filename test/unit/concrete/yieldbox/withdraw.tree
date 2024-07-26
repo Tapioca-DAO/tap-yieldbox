@@ -1,0 +1,22 @@
+withdraw.t.sol
+depositAsset.t.sol
+├── when `from` is not `msg.sender`
+│   ├── when `msg.sender` is not approved by `from` for asset
+│   │   ├── when `msg.sender` is not approved by `from` for all
+│   │   │   └── it should revert
+│   │   └── it continues execution
+│   └── it continues execution
+└── it CONTINUES
+    ├── when `asset` type is Native
+    │   └── it should revert
+    ├──  when `asset` type is ERC20
+    │   ├── when `share` is zero
+    │   │   └── it should compute `share` rounding up `amount` supplied 
+    │   └── when `share` is not zero
+    │       └── it should compute `amount` rounding down `share` supplied 
+    ├── it should decrement `balanceOf` of `to` by `share`
+    ├── it should decrement `totalSupply` by `share`
+    ├── it should emit a `TransferSingle` event
+    ├── it should decrement `strategy`'s balance by `amount`
+    └── it should emit a `Withdraw` event
+         

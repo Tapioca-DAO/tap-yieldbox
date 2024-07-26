@@ -1,0 +1,20 @@
+transferMultiple.t.sol
+├── when `from` is not `msg.sender`
+│   ├── when `msg.sender` is not approved by `from` for asset
+│   │   ├── when `msg.sender` is not approved by `from` for all
+│   │   │   └── it should revert
+│   │   └── it continues execution
+│   └── it continues execution
+└── it CONTINUES
+    ├── when asset is not registered in YieldBox 
+    │   └── it should revert
+    └──  when asset is registered in YieldBox
+        └── when any of `tos` is address(0)
+        │   └── it should revert
+        └── when all `tos` are not address(0)
+            └── when `_totalShares` is bigger than `balanceOf` `from`
+            │   └── it should revert
+            └── when `_totalShares` is smaller or equal than `balanceOf` `from`
+                ├── it should increment `balanceOf` each `to` by the respective `shares`
+                ├── it should emit a `TransferSingle` event for each iteration
+                └── it should decrement `balanceOf` `from` by the total accumulated `_totalShares`

@@ -62,7 +62,7 @@ contract ERC1155 is IERC1155 {
     }
 
     function _transferSingle(
-        address from,
+        address from, 
         address to,
         uint256 id,
         uint256 value
