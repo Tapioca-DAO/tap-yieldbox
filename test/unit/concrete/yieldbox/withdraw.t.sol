@@ -37,6 +37,10 @@ contract withdraw is YieldBoxUnitConcreteTest {
         super.setUp();
     } 
 
+    /////////////////////////////////////////////////////////////////////
+    //                         TESTS                                   //
+    /////////////////////////////////////////////////////////////////////
+
     /// @notice Tests the scenario where `from` is not allowed
     /// @dev `from not being allowed implies the following:
     ///     - `from` is different from `msg.sender`

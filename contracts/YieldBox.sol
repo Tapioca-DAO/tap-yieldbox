@@ -52,7 +52,7 @@ import {OZOwnable} from "./OZOwnable.sol";
 /// Yield from this will go to the token depositors.
 /// Any funds transfered directly onto the YieldBox will be lost, use the deposit function instead.
 contract YieldBox is
-    YieldBoxPermit,
+    YieldBoxPermit, 
     BoringBatchable,
     NativeTokenFactory,
     ERC721TokenReceiver,
@@ -89,6 +89,8 @@ contract YieldBox is
         uint256 amountOut,
         uint256 shareOut
     );
+
+    event PearlmitUpdated(address oldPearlmit, address newPearlmit);
 
     // ******************* //
     // *** ERRORS ******** //
@@ -566,7 +568,7 @@ contract YieldBox is
         // Effects
         _setApprovalForAll(msg.sender, operator, approved);
     }
-
+ 
     /// @notice Update approval status for an operator
     /// @param _owner The YieldBox account owner
     /// @param operator The address approved to perform actions on your behalf
@@ -808,6 +810,7 @@ contract YieldBox is
     /// @notice Set the Pearlmit contract
     /// @param pearlmit_ The new Pearlmit contract address
     function setPearlmit(Pearlmit pearlmit_) external onlyContractOwner {
+        emit PearlmitUpdated(address(pearlmit), address(pearlmit_));
         pearlmit = pearlmit_;
     }
 }

@@ -15,9 +15,17 @@ import {IStrategy} from "contracts/interfaces/IStrategy.sol";
 import "contracts/interfaces/IWrappedNative.sol";
 
 contract depositETHAsset is YieldBoxUnitConcreteTest {
+
+    /////////////////////////////////////////////////////////////////////
+    //                         SETUP                                   //
+    /////////////////////////////////////////////////////////////////////
     function setUp() public override {
         super.setUp();
     }
+
+    /////////////////////////////////////////////////////////////////////
+    //                         TESTS                                   //
+    /////////////////////////////////////////////////////////////////////
 
     /// @notice Tests the scenario where `assetId` is not ERC20
     function test_depositETHAssetRevertWhen_AssetIsNotERC20(uint64 depositAmount) public {

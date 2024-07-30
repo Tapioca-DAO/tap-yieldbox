@@ -2,7 +2,7 @@
 pragma solidity 0.8.22;
 
 // Utilities
-import {Users} from "./utils/Types.sol";
+import {Users, PrivateKeys} from "./utils/Types.sol";
 import {Utils} from "./utils/Utils.sol";
 import {Events} from "./utils/Events.sol";
 import {Errors} from "./utils/Errors.sol";
@@ -28,6 +28,7 @@ abstract contract BaseTest is Utils, Events, Errors, Constants {
 
     /// @notice Protocol users
     Users internal users;
+    PrivateKeys internal privateKeys;
     address[] internal userAddresses;
 
     /// @notice Tokens
@@ -55,17 +56,17 @@ abstract contract BaseTest is Utils, Events, Errors, Constants {
         vm.label({account: address(usdt), newLabel: "USDT"});
         vm.label({account: address(wrappedNative), newLabel: "WETH"});
 
-        // Deploy protocol.
-        _deployYieldBox();
-
         // Create users.
         _initializeUsers();
+
+        // Deploy protocol.
+        _deployYieldBox();
     }
 
     /////////////////////////////////////////////////////////////////////
     //                           MODIFIERS                             //
     /////////////////////////////////////////////////////////////////////
-    
+
     /// @notice Modifier to approve an operator in YB via Pearlmit.
     modifier whenApprovedViaPearlmit(
         address _from,
@@ -102,15 +103,15 @@ abstract contract BaseTest is Utils, Events, Errors, Constants {
         _;
     }
 
-     /// @notice Modifier to approve an operator for a specific asset ID via YB.
+    /// @notice Modifier to approve an operator for a specific asset ID via YB.
     modifier whenYieldBoxApprovedForMultipleAssetIDs(
         address _from,
         address _operator
     ) {
-        for(uint256 i = 1; i <= 3; i++){
+        for (uint256 i = 1; i <= 3; i++) {
             _approveYieldBoxAssetId(_from, _operator, i);
         }
-        
+
         _;
     }
 
@@ -145,12 +146,12 @@ abstract contract BaseTest is Utils, Events, Errors, Constants {
     /// @notice Initializes test users.
     function _initializeUsers() internal {
         // Create users
-        users.owner = _createUser("owner");
-        users.alice = _createUser("alice");
-        users.bob = _createUser("bob");
-        users.charlie = _createUser("charlie");
-        users.david = _createUser("david");
-        users.eve = _createUser("eve");
+        (users.owner, privateKeys.ownerPK) = _createUser("owner");
+        (users.alice, privateKeys.alicePK)  = _createUser("alice");
+        (users.bob, privateKeys.bobPK)  = _createUser("bob");
+        (users.charlie, privateKeys.charliePK)  = _createUser("charlie");
+        (users.david, privateKeys.davidPK)  = _createUser("david");
+        (users.eve, privateKeys.evePK)  = _createUser("eve");
 
         // Fill users array
         userAddresses.push(users.alice);
@@ -252,12 +253,17 @@ abstract contract BaseTest is Utils, Events, Errors, Constants {
     /// @notice Generates a user, labels its address, funds it with test assets, and approves the protocol contracts.
     function _createUser(
         string memory name
-    ) internal returns (address payable) {
-        address payable user = payable(makeAddr(name));
+    ) internal returns (address payable, uint256) {
+        (address user, uint256 privateKey) = makeAddrAndKey(name);
+
         vm.deal({account: user, newBalance: type(uint128).max});
         deal({token: address(dai), to: user, give: type(uint128).max});
-        deal({token: address(wrappedNative), to: user, give: type(uint128).max});
+        deal({
+            token: address(wrappedNative),
+            to: user,
+            give: type(uint128).max
+        });
         deal({token: address(usdt), to: user, give: type(uint128).max});
-        return user;
+        return (payable(user), privateKey);
     }
 }

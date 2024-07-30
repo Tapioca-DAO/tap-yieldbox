@@ -1,0 +1,13 @@
+permit.t.sol
+├── when `deadline` is smaller than `block.timestamp`
+│   └──  it should revert
+└── when `deadline` is bigger or equal than `block.timestamp`
+	├── when recovered signer is different from owner
+	│   └──  it should revert
+	└── when recovered signer is equal to owner
+		├── when asset ID is bigger or equal to asset count
+		│	└──  it should revert
+		└──	when asset ID is smaller than asset count
+			├── it should update `isApprovedForAsset` to true
+			├── it should increment nonce
+			└──	it should emit `ApprovalForAsset`

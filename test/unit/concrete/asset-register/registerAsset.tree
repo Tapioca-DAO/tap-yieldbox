@@ -1,0 +1,24 @@
+registerAsset.t.sol
+├── when tokenType is NATIVE or NONE
+│   └── it should revert
+└── when tokenType is not NATIVE nor NONE  
+    ├── when assetId is 0
+    │   └── when asset is ERC20
+    │       ├── when tokenId is not 0
+    │       │   └── it should revert 
+    │       └── when tokenId is 0
+    │           └── it continues execution
+    └── it CONTINUES 
+        ├── when strategy tokenType is different from supplied tokenType
+        │   └── it should revert
+        └── when strategy tokenType is not different from supplied tokenType
+            ├── when strategy contractAddress is different from supplied contractAddress
+            │   └── it should revert
+            └── when strategy contractAddress is not different from supplied contractAddress
+                ├── when strategy tokenId is different from supplied tokenId
+                │   └── it should revert
+                └── when strategy tokenId is not different from supplied tokenId
+                    ├── it should push new asset to `assets`
+                    ├── it should update `ids` with latest value returned from `assets.length` and with the new data
+                    ├── it should emit a `URI` event
+                    └── it should emit an `AssetRegistered` event

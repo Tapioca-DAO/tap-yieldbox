@@ -10,10 +10,17 @@ import {YieldBox, Pearlmit} from "contracts/YieldBox.sol";
 import "contracts/interfaces/IWrappedNative.sol";
 
 contract ConstructorYB is YieldBoxUnitConcreteTest {
+    
+    /////////////////////////////////////////////////////////////////////
+    //                         SETUP                                   //
+    /////////////////////////////////////////////////////////////////////
     function setUp() public override {
         super.setUp();
     }
 
+    /////////////////////////////////////////////////////////////////////
+    //                          TESTS                                  //
+    /////////////////////////////////////////////////////////////////////
     function test_constructorYieldBox() public {
         
         // It should emit an `OwnershipTransferred` event

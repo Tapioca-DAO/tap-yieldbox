@@ -47,7 +47,7 @@ abstract contract YieldBoxPermit is EIP712 {
      * It's a good idea to use the same `name` that is defined as the ERC721 token name.
      */
     constructor(string memory name) EIP712(name, "1") {}
- 
+  
     function permit(
         address owner,
         address spender,

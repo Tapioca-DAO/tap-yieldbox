@@ -4,13 +4,24 @@ pragma solidity 0.8.22;
 // Utilities
 import {BaseTest} from "../../../Base.t.sol";
 
+//  External
+import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+
+// Contracts
 import {TokenType} from "contracts/enums/YieldBoxTokenType.sol";
 import {ERC20WithoutStrategy} from "contracts/strategies/ERC20WithoutStrategy.sol";
 import {IYieldBox} from "contracts/interfaces/IYieldBox.sol";
 import {IStrategy} from "contracts/interfaces/IStrategy.sol";
 
+// Interfaces
 import {IERC20} from "@boringcrypto/boring-solidity/contracts/interfaces/IERC20.sol";
 
+/// @notice Helper contract for YieldBox testing.
+/// @dev Includes:
+///     - Asset registering
+///     - Strategies registering
+///     - Deposit helpers
+///     - Signing helpers
 contract YieldBoxUnitConcreteTest is BaseTest {
     /////////////////////////////////////////////////////////////////////
     //                         STORAGE                                 //
@@ -81,6 +92,7 @@ contract YieldBoxUnitConcreteTest is BaseTest {
     //                           MODIFIERS                             //
     /////////////////////////////////////////////////////////////////////
 
+    /// @notice Modifier utilized to perform a single deposit into YieldBox.
     modifier whenDeposited(
         uint256 _assetId,
         address _from,
@@ -98,6 +110,11 @@ contract YieldBoxUnitConcreteTest is BaseTest {
         _;
     }
 
+    /// @notice Modifier utilized to perform deposits for all supported YieldBox assets.
+    /// @dev Deposits the following assets:
+    ///     - DAI
+    ///     - WRAPPED NATIVE
+    ///     - USDT
     modifier whenDepositedAll(
         address _from,
         address _to,
@@ -117,6 +134,7 @@ contract YieldBoxUnitConcreteTest is BaseTest {
         _;
     }
 
+    /// @notice Modifier utilized to perform multiple deposits into YieldBox.
     modifier simulateYieldBoxDeposits(
         uint256 _assetId,
         uint256 _amount,
@@ -135,6 +153,7 @@ contract YieldBoxUnitConcreteTest is BaseTest {
     /////////////////////////////////////////////////////////////////////
     //                       INTERNAL HELPERS                          //
     /////////////////////////////////////////////////////////////////////
+    /// @notice Function utilized to perform a single deposit into YieldBox.
     function _whenDeposited(
         uint256 assetId,
         address from,
@@ -160,6 +179,8 @@ contract YieldBoxUnitConcreteTest is BaseTest {
         });
     }
 
+    /// @notice Function utilized to perform several deposits with different users into YieldBox.
+    /// @dev Note that `alice` does not deposit.
     function _simulateYieldBoxDeposits(
         uint256 assetId,
         uint256 amount,
@@ -175,5 +196,53 @@ contract YieldBoxUnitConcreteTest is BaseTest {
                 share: share
             });
         }
+    }
+
+    /// @notice Function utilized to sign YieldBox permit operations.
+    /// @dev It aggregates signatures for:
+    ///     - permit
+    ///     - revoke
+    ///     - permitAll
+    ///     - revokeAll
+    function _signPermit(
+        bool isForAssetId,
+        bool isPermit,
+        address owner,
+        address spender,
+        uint256 assetId,
+        uint256 nonce,
+        uint256 deadline,
+        uint256 privateKey
+    ) internal view returns (uint8 v, bytes32 r, bytes32 s) {
+        // Build struct hash for YieldBox permit
+        bytes32 structHash = isForAssetId
+            ? keccak256(
+                abi.encode(
+                    isPermit ? PERMIT_TYPEHASH : REVOKE_TYPEHASH,
+                    owner,
+                    spender,
+                    assetId,
+                    nonce,
+                    deadline
+                )
+            )
+            : keccak256(
+                abi.encode(
+                    isPermit ? PERMIT_ALL_TYPEHASH : REVOKE_ALL_TYPEHASH,
+                    owner,
+                    spender,
+                    nonce,
+                    deadline
+                )
+            );
+
+        // Convert to typed data hash
+        bytes32 hash = ECDSA.toTypedDataHash(
+            yieldBox.DOMAIN_SEPARATOR(),
+            structHash
+        );
+
+        // Sign the typed data hash
+        (v, r, s) = vm.sign(privateKey, hash);
     }
 }

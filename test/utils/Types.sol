@@ -16,3 +16,19 @@ struct Users {
     address payable eve;
 
 }
+
+struct PrivateKeys {
+    // Default owner for all Yieldbox contracts
+    uint256 ownerPK;
+    // Impartial user 1's PK.
+    uint256 alicePK;
+    // Impartial user 2's PK.
+    uint256 bobPK;
+    // Impartial user 3's PK.
+    uint256 charliePK;
+    // Impartial user 4's PK.
+    uint256 davidPK;
+    // Malicious user's PK.
+    uint256 evePK;
+
+}

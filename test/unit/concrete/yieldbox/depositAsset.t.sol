@@ -31,7 +31,11 @@ contract depositAsset is YieldBoxUnitConcreteTest {
     /////////////////////////////////////////////////////////////////////
     function setUp() public override {
         super.setUp();
-    } 
+    }
+
+    /////////////////////////////////////////////////////////////////////
+    //                         TESTS                                   //
+    /////////////////////////////////////////////////////////////////////
 
     /// @notice Tests the scenario where `from` is not allowed
     /// @dev `from not being allowed implies the following:

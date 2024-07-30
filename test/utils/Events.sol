@@ -1,6 +1,11 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.22;
 
+// Contracts
+import {TokenType} from "contracts/enums/YieldBoxTokenType.sol";
+import {IStrategy} from "contracts/interfaces/IStrategy.sol";
+
+/// @notice Helper contract containing events for testing.
 abstract contract Events {
     /////////////////////////////////////////////////////////////////////
     //                          OZ OWNABLE                             //
@@ -30,6 +35,20 @@ abstract contract Events {
         uint256[] _values
     );
 
+    event ApprovalForAll(
+        address indexed _owner,
+        address indexed _operator,
+        bool _approved
+    );
+
+    event ApprovalForAsset(
+        address indexed sender,
+        address indexed operator,
+        uint256 assetId,
+        bool approved
+    );
+    event URI(string _value, uint256 indexed _id);
+
     /////////////////////////////////////////////////////////////////////
     //                      YIELDBOX - GLOBAL                          //
     /////////////////////////////////////////////////////////////////////
@@ -54,5 +73,15 @@ abstract contract Events {
         uint256 shareIn,
         uint256 amountOut,
         uint256 shareOut
+    );
+
+    event PearlmitUpdated(address oldPearlmit, address newPearlmit);
+
+    event AssetRegistered(
+        TokenType indexed tokenType,
+        address indexed contractAddress,
+        IStrategy strategy,
+        uint256 indexed tokenId,
+        uint256 assetId
     );
 }
