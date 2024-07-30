@@ -164,7 +164,7 @@ contract YieldBox is
         // Checks
         Asset storage asset = assets[assetId];
         if (asset.tokenType == TokenType.Native) revert InvalidTokenType();
-        if (asset.tokenType == TokenType.ERC721) revert InvalidTokenType(); // @audit-issue [LOW-01] - Should check for asset type `NONE`
+        if (asset.tokenType == TokenType.ERC721) revert InvalidTokenType(); 
         if (asset.tokenType == TokenType.None) revert InvalidTokenType();
 
         if (share == 0 && amount == 0) revert InvalidZeroAmounts();
