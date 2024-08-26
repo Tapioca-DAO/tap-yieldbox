@@ -1,0 +1,4 @@
+constructor.t.sol
+└── when deployed
+    ├── it should push a new asset with type None and empty data
+    └── `assetCount` should return one

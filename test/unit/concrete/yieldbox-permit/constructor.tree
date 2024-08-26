@@ -1,0 +1,6 @@
+constructor.t.sol
+└── when deployed
+    ├── it should set `_hashedName` to keccak256 hash of supplied `name` 
+    ├── it should set `_hashedVersion` to keccak256 hash of "1"
+    ├── it should set `_cachedChainId` to current `block.chainid`
+    └── it should set `_cachedDomainSeparator` to value returned by `_buildDomainSeparator`

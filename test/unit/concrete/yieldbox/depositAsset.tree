@@ -1,0 +1,35 @@
+depositAsset.t.sol
+├── when `from` is not `msg.sender`
+│   ├── when `msg.sender` is not approved by `from` for asset
+│   │   ├── when `msg.sender` is not approved by `from` for all
+│   │   │   └── it should revert
+│   │   └── it continues execution
+│   └── it continues execution
+└── it CONTINUES
+    ├── when asset is not registered in YieldBox 
+    │   └── it should revert
+    └── when asset is registered in YieldBox      
+        ├── when asset is not an ERC1155 or ERC20
+        │   └── it should revert
+        └── when asset is an ERC1155 or ERC20
+            ├── when `to` is address(0)
+            │   └── it should revert
+            └──when `to` is not address(0)
+                ├── when asset is ERC20
+                │   ├── when transfer is performed via pearlmit and pearlmit transfer fails
+                │   │   └── it should revert
+                │   └── when ERC20 regular transfer fails
+                │       └── it should revert
+                ├── when amount of assets supplied is 0
+                │   └── it should revert
+                └── when amount of assets supplied is greater than 0
+                    ├── when `share` is 0
+                    │   └── it should compute `share` rounding down `amount` supplied 
+                    ├── when `amount` is 0
+                    │   └── it should compute `amount` rounding up `share` supplied
+                    ├── it should increment `balanceOf` of `to` by `share`
+                    ├── it should increment `totalSupply` by `share`
+                    ├── it should emit a `TransferSingle` event
+                    ├── it should increment `strategy`'s balance by `amount`
+                    └── it should emit a `Deposited` event
+ 

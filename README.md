@@ -1,44 +1,66 @@
-## Yieldbox
+## Foundry
 
-[YieldBox](https://github.com/Tapioca-DAO/YieldBox) contracts with Tapioca project architecture
+**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+
+Foundry consists of:
+
+-   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
+-   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
+-   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
+-   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+
+## Documentation
+
+https://book.getfoundry.sh/
 
 ## Usage
 
-To install Foundry:
+### Build
 
-```sh
-curl -L https://foundry.paradigm.xyz | bash
+```shell
+$ forge build
 ```
 
-This will download foundryup. To start Foundry, run:
+### Test
 
-```sh
-foundryup
+```shell
+$ forge test
 ```
 
-To clone the repo:
+### Format
 
-```sh
-git clone https://github.com/Tapioca-DAO/tap-yieldbox.git && cd tap-yieldbox
+```shell
+$ forge fmt
 ```
 
-To install as a forge library:
+### Gas Snapshots
 
-```sh
-forge install Tapioca-DAO/tap-yieldbox
+```shell
+$ forge snapshot
 ```
 
-To install as a submodule:
-    
-```sh
-git submodule add https://github.com/Tapioca-DAO/tap-yieldbox.git
+### Anvil
+
+```shell
+$ anvil
 ```
 
-## Install
+### Deploy
 
-To install this repository:
+```shell
+$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
+```
 
-```bash
-forge install
-yarn
+### Cast
+
+```shell
+$ cast <subcommand>
+```
+
+### Help
+
+```shell
+$ forge --help
+$ anvil --help
+$ cast --help
 ```

@@ -6,7 +6,7 @@ import "@boringcrypto/boring-solidity/contracts/interfaces/IERC20.sol";
 import "@boringcrypto/boring-solidity/contracts/libraries/BoringERC20.sol";
 import "../enums/YieldBoxTokenType.sol";
 import "../interfaces/IStrategy.sol";
-
+ 
 // solhint-disable const-name-snakecase
 // solhint-disable no-empty-blocks
 
@@ -78,3 +78,20 @@ abstract contract BaseERC1155Strategy is BaseStrategy {
         tokenId = _tokenId;
     }
 }
+
+abstract contract BaseERC721Strategy is BaseStrategy {
+    TokenType public constant tokenType = TokenType.ERC721;
+    uint256 public immutable tokenId;
+    address public immutable contractAddress;
+
+    constructor(
+        IYieldBox _yieldBox,
+        address _contractAddress,
+        uint256 _tokenId
+    ) BaseStrategy(_yieldBox) {
+        contractAddress = _contractAddress;
+        tokenId = _tokenId;
+    }
+}
+
+

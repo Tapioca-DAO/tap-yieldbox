@@ -1,0 +1,9 @@
+setApprovalForAll.t.sol
+├── when `operator` is address(0)
+│   └── it should revert
+└── when `operator` is not address(0)
+    ├── when `operator` is YieldBox address
+    │  └── it should revert
+    └── when `operator` is not YieldBox address
+        ├── it should update `isApprovedForAll` from `msg.sender` to `operator` with the new `approved` value
+        └── it should emit an `ApprovalForAll` event
