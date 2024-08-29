@@ -378,10 +378,8 @@ contract YieldBox is
     function batchTransfer(address from, address to, uint256[] calldata assetIds_, uint256[] calldata shares_) public {
         uint256 len = assetIds_.length;
 
-        unchecked {
-            for (uint256 i; i < len; i++) {
-                _requireTransferAllowed(from, isApprovedForAsset[from][msg.sender][assetIds_[i]]);
-            }
+        for (uint256 i; i < len; i++) {
+            _requireTransferAllowed(from, isApprovedForAsset[from][msg.sender][assetIds_[i]]);
         }
 
         _transferBatch(from, to, assetIds_, shares_);
@@ -394,11 +392,9 @@ contract YieldBox is
         if (to == address(0)) revert ZeroAddress();
 
         uint256 len = ids.length;
-        unchecked {
-            for (uint256 i; i < len; i++) {
-                balanceOf[from][ids[i]] -= values[i];
-                balanceOf[to][ids[i]] += values[i];
-            }
+        for (uint256 i; i < len; i++) {
+            balanceOf[from][ids[i]] -= values[i];
+            balanceOf[to][ids[i]] += values[i];
         }
 
         emit TransferBatch(msg.sender, from, to, ids, values);
@@ -415,13 +411,11 @@ contract YieldBox is
     {
         uint256 len = tos.length;
         uint256 _totalShares;
-        unchecked {
-            for (uint256 i; i < len; i++) {
-                if (tos[i] == address(0)) revert ZeroAddress();
-                balanceOf[tos[i]][assetId] += shares[i];
-                _totalShares += shares[i];
-                emit TransferSingle(msg.sender, from, tos[i], assetId, shares[i]);
-            }
+        for (uint256 i; i < len; i++) {
+            if (tos[i] == address(0)) revert ZeroAddress();
+            balanceOf[tos[i]][assetId] += shares[i];
+            _totalShares += shares[i];
+            emit TransferSingle(msg.sender, from, tos[i], assetId, shares[i]);
         }
         balanceOf[from][assetId] -= _totalShares;
     }
