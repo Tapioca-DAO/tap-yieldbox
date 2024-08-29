@@ -60,8 +60,7 @@ contract ERC20StrategyMock is IStrategy {
     /// the strategy should divest enough from the strategy to complete the withdrawal and rebalance the reserve.
     /// Only accept this call from the YieldBox
     function withdraw(address to, uint256 amount) external override {
-        if (contractAddress == yieldBox.wrappedNative()) {} else {
-            IERC20(contractAddress).safeTransfer(to, amount);
-        }
+        if (contractAddress == yieldBox.wrappedNative()) {}
+        else IERC20(contractAddress).safeTransfer(to, amount);
     }
 }
