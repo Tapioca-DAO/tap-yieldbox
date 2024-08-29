@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 pragma experimental ABIEncoderV2;
+
 import "../YieldBox.sol";
 
 // solhint-disable not-rely-on-time
@@ -21,16 +22,8 @@ contract Salary is BoringBatchable {
         uint256 totalShare,
         uint256 salaryId
     );
-    event LogWithdraw(
-        uint256 indexed salaryId,
-        address indexed to,
-        uint256 share
-    );
-    event LogCancel(
-        uint256 indexed salaryId,
-        address indexed to,
-        uint256 share
-    );
+    event LogWithdraw(uint256 indexed salaryId, address indexed to, uint256 share);
+    event LogCancel(uint256 indexed salaryId, address indexed to, uint256 share);
 
     constructor(YieldBox _yieldBox) {
         yieldBox = _yieldBox;
@@ -106,21 +99,10 @@ contract Salary is BoringBatchable {
         salary.share = share;
         salaries.push(salary);
 
-        emit LogCreate(
-            msg.sender,
-            recipient,
-            assetId,
-            cliffTimestamp,
-            endTimestamp,
-            cliffPercent,
-            share,
-            salaryId
-        );
+        emit LogCreate(msg.sender, recipient, assetId, cliffTimestamp, endTimestamp, cliffPercent, share, salaryId);
     }
 
-    function _available(
-        UserSalary memory salary
-    ) internal view returns (uint256 share) {
+    function _available(UserSalary memory salary) internal view returns (uint256 share) {
         if (block.timestamp < salary.cliffTimestamp) {
             // Before the cliff, none is available
             share = 0;
@@ -154,9 +136,7 @@ contract Salary is BoringBatchable {
         share = _available(salaries[salaryId]);
     }
 
-    function info(
-        uint256 salaryId
-    )
+    function info(uint256 salaryId)
         public
         view
         returns (
@@ -177,42 +157,22 @@ contract Salary is BoringBatchable {
         cliffTimestamp = salaries[salaryId].cliffTimestamp;
         endTimestamp = salaries[salaryId].endTimestamp;
         cliffPercent = salaries[salaryId].cliffPercent;
-        amount = yieldBox.toAmount(
-            salaries[salaryId].assetId,
-            salaries[salaryId].share,
-            false
-        );
-        withdrawnAmount = yieldBox.toAmount(
-            salaries[salaryId].assetId,
-            salaries[salaryId].withdrawnShare,
-            false
-        );
-        availableAmount = yieldBox.toAmount(
-            salaries[salaryId].assetId,
-            _available(salaries[salaryId]),
-            false
-        );
+        amount = yieldBox.toAmount(salaries[salaryId].assetId, salaries[salaryId].share, false);
+        withdrawnAmount = yieldBox.toAmount(salaries[salaryId].assetId, salaries[salaryId].withdrawnShare, false);
+        availableAmount = yieldBox.toAmount(salaries[salaryId].assetId, _available(salaries[salaryId]), false);
     }
 
     function _withdraw(uint256 salaryId, address to) internal {
         uint256 pendingShare = _available(salaries[salaryId]);
         salaries[salaryId].withdrawnShare += pendingShare;
-        yieldBox.transfer(
-            address(this),
-            to,
-            salaries[salaryId].assetId,
-            pendingShare
-        );
+        yieldBox.transfer(address(this), to, salaries[salaryId].assetId, pendingShare);
         emit LogWithdraw(salaryId, to, pendingShare);
     }
 
     // Withdraw the maximum amount possible for a salaryId
     function withdraw(uint256 salaryId, address to) public {
         // Only pay out to the recipient
-        require(
-            salaries[salaryId].recipient == msg.sender,
-            "Salary: not recipient"
-        );
+        require(salaries[salaryId].recipient == msg.sender, "Salary: not recipient");
         _withdraw(salaryId, to);
     }
 
@@ -227,14 +187,8 @@ contract Salary is BoringBatchable {
         // Pay the recipient all accrued funds
         _withdraw(salaryId, salaries[salaryId].recipient);
         // Return the rest to the funder
-        uint256 shareLeft = salaries[salaryId].share -
-            salaries[salaryId].withdrawnShare;
-        yieldBox.transfer(
-            address(this),
-            to,
-            salaries[salaryId].assetId,
-            shareLeft
-        );
+        uint256 shareLeft = salaries[salaryId].share - salaries[salaryId].withdrawnShare;
+        yieldBox.transfer(address(this), to, salaries[salaryId].assetId, shareLeft);
         emit LogCancel(salaryId, to, shareLeft);
     }
 }

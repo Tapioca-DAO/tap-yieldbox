@@ -71,10 +71,7 @@ contract revokeAll is YieldBoxUnitConcreteTest {
 
     /// @notice Checks the scenario where parameters passed are valid
     /// @dev Transaction is triggered by a third-party user different from the signer.
-    function test_revokeAll_ValidExecution()
-        public
-        whenYieldBoxApprovedForAll(users.alice, users.bob)
-    {
+    function test_revokeAll_ValidExecution() public whenYieldBoxApprovedForAll(users.alice, users.bob) {
         // Fetch nonce
         uint256 currentNonce = yieldBox.nonces(users.alice);
 

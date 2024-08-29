@@ -11,18 +11,9 @@ contract RevertingERC20Mock {
     mapping(address => mapping(address => uint256)) public allowance;
 
     event Transfer(address indexed _from, address indexed _to, uint256 _value);
-    event Approval(
-        address indexed _owner,
-        address indexed _spender,
-        uint256 _value
-    );
+    event Approval(address indexed _owner, address indexed _spender, uint256 _value);
 
-    constructor(
-        string memory name_,
-        string memory symbol_,
-        uint8 decimals_,
-        uint256 supply
-    ) {
+    constructor(string memory name_, string memory symbol_, uint8 decimals_, uint256 supply) {
         name = name_;
         symbol = symbol_;
         decimals = decimals_;
@@ -31,37 +22,21 @@ contract RevertingERC20Mock {
         emit Transfer(address(0), msg.sender, supply);
     }
 
-    function transfer(
-        address to,
-        uint256 amount
-    ) public returns (bool success) {
+    function transfer(address to, uint256 amount) public returns (bool success) {
         require(balanceOf[msg.sender] >= amount, "TokenB: balance too low");
         require(amount >= 0, "TokenB: amount should be > 0");
-        require(
-            balanceOf[to] + amount >= balanceOf[to],
-            "TokenB: overflow detected"
-        );
+        require(balanceOf[to] + amount >= balanceOf[to], "TokenB: overflow detected");
         balanceOf[msg.sender] -= amount;
         balanceOf[to] += amount;
         emit Transfer(msg.sender, to, amount);
         return true;
     }
 
-    function transferFrom(
-        address from,
-        address to,
-        uint256 amount
-    ) public returns (bool success) {
+    function transferFrom(address from, address to, uint256 amount) public returns (bool success) {
         require(balanceOf[from] >= amount, "TokenB: balance too low");
-        require(
-            allowance[from][msg.sender] >= amount,
-            "TokenB: allowance too low"
-        );
+        require(allowance[from][msg.sender] >= amount, "TokenB: allowance too low");
         require(amount >= 0, "TokenB: amount should be >= 0");
-        require(
-            balanceOf[to] + amount >= balanceOf[to],
-            "TokenB: overflow detected"
-        );
+        require(balanceOf[to] + amount >= balanceOf[to], "TokenB: overflow detected");
         balanceOf[from] -= amount;
         allowance[from][msg.sender] -= amount;
         balanceOf[to] += amount;
@@ -69,10 +44,7 @@ contract RevertingERC20Mock {
         return true;
     }
 
-    function approve(
-        address spender,
-        uint256 amount
-    ) public returns (bool success) {
+    function approve(address spender, uint256 amount) public returns (bool success) {
         allowance[msg.sender][spender] = amount;
         emit Approval(msg.sender, spender, amount);
         return true;

@@ -15,7 +15,6 @@ import {IStrategy} from "contracts/interfaces/IStrategy.sol";
 import "contracts/interfaces/IWrappedNative.sol";
 
 contract transfer is YieldBoxUnitConcreteTest {
-
     /////////////////////////////////////////////////////////////////////
     //                          STRUCT                                 //
     /////////////////////////////////////////////////////////////////////
@@ -23,7 +22,6 @@ contract transfer is YieldBoxUnitConcreteTest {
         uint256 aliceBalanceBeforeTransfer;
         uint256 bobBalanceBeforeTransfer;
     }
-
 
     /////////////////////////////////////////////////////////////////////
     //                          SETUP                                  //
@@ -45,100 +43,67 @@ contract transfer is YieldBoxUnitConcreteTest {
         public
         whenDeposited(DAI_ASSET_ID, users.alice, users.alice, MEDIUM_AMOUNT, 0)
     {
-        uint256 balanceOfAfterDeposit = yieldBox.balanceOf(
-            users.alice,
-            DAI_ASSET_ID
-        );
+        uint256 balanceOfAfterDeposit = yieldBox.balanceOf(users.alice, DAI_ASSET_ID);
 
         // Prank malicious user. No approvals have been performed.
         _resetPrank({msgSender: users.eve});
 
         // Try to transfer assets on behalf of impartial user
         vm.expectRevert("Transfer not allowed");
-        yieldBox.transfer(
-            users.alice,
-            users.eve,
-            DAI_ASSET_ID,
-            balanceOfAfterDeposit
-        );
+        yieldBox.transfer(users.alice, users.eve, DAI_ASSET_ID, balanceOfAfterDeposit);
     }
 
     /// @notice Tests the scenario where `asset`is not registered in YieldBox.
     /// @dev Trying to transfer assets not registered relies on users not being able to have a positive balance of
     /// an asset that still has not been added to the protocol. Hence, zero-value transfers of non-registered assets
     /// are still allowed, although behave as a no-op.
-    function test_transferRevertWhen_AssetIsNotRegistered(
-        uint256 transferAmount
-    ) public assumeNoZeroValue(transferAmount) {
+    function test_transferRevertWhen_AssetIsNotRegistered(uint256 transferAmount)
+        public
+        assumeNoZeroValue(transferAmount)
+    {
         // Try to transfer asset not registered in YieldBox.
         vm.expectRevert();
         yieldBox.transfer(users.alice, users.bob, 5, transferAmount);
     }
 
     /// @notice Tests the scenario where `to` is address(0)
-    function test_transferRevertWhen_ToIsZeroAddress(
-        uint64 depositAmount
-    )
+    function test_transferRevertWhen_ToIsZeroAddress(uint64 depositAmount)
         public
         assumeNoZeroValue(depositAmount)
         whenDeposited(DAI_ASSET_ID, users.alice, users.alice, depositAmount, 0)
     {
-        uint256 balanceOfAfterDeposit = yieldBox.balanceOf(
-            users.alice,
-            DAI_ASSET_ID
-        );
+        uint256 balanceOfAfterDeposit = yieldBox.balanceOf(users.alice, DAI_ASSET_ID);
 
         // Try to transfer assets to address(0)
         vm.expectRevert("No 0 address");
-        yieldBox.transfer(
-            users.alice,
-            address(0),
-            DAI_ASSET_ID,
-            balanceOfAfterDeposit
-        );
+        yieldBox.transfer(users.alice, address(0), DAI_ASSET_ID, balanceOfAfterDeposit);
     }
 
     /// @notice Tests the scenario where amount transferred exceeds balance.
-    function test_transferRevertWhen_ValueIsGreaterThanBalance(
-        uint64 depositAmount,
-        uint16 addition
-    )
+    function test_transferRevertWhen_ValueIsGreaterThanBalance(uint64 depositAmount, uint16 addition)
         public
         assumeNoZeroValue(addition)
         assumeNoZeroValue(depositAmount)
         whenDeposited(DAI_ASSET_ID, users.alice, users.alice, depositAmount, 0)
     {
-        uint256 balanceOfAfterDeposit = yieldBox.balanceOf(
-            users.alice,
-            DAI_ASSET_ID
-        );
+        uint256 balanceOfAfterDeposit = yieldBox.balanceOf(users.alice, DAI_ASSET_ID);
 
         // Try to transfer more assets than held. The expected error
         // is a panic (underflow) error. `expectRevert` does not include a custom way to handle such errors, so we
         // use an `expectRevert` without a reason.
         vm.expectRevert();
-        yieldBox.transfer(
-            users.alice,
-            users.alice,
-            DAI_ASSET_ID,
-            balanceOfAfterDeposit + uint256(addition)
-        );
+        yieldBox.transfer(users.alice, users.alice, DAI_ASSET_ID, balanceOfAfterDeposit + uint256(addition));
     }
 
     /// @notice Tests the scenario where amount transferred exceeds balance, on behalf of shares owner, by approving asset.
-    function test_transferRevertWhen_ValueIsGreaterThanBalanceWhenApprovedForAssetID(
-        uint32 depositAmount
-    )
+    function test_transferRevertWhen_ValueIsGreaterThanBalanceWhenApprovedForAssetID(uint32 depositAmount)
         public
         assumeNoZeroValue(depositAmount)
         whenDeposited(DAI_ASSET_ID, users.alice, users.alice, depositAmount, 0)
         whenYieldBoxApprovedForAssetID(users.alice, users.bob, DAI_ASSET_ID)
-    { 
+    {
         {
-            uint256 balanceOfAfterDeposit = yieldBox.balanceOf(
-                users.alice,
-                DAI_ASSET_ID
-            );
+            uint256 balanceOfAfterDeposit = yieldBox.balanceOf(users.alice, DAI_ASSET_ID);
 
             // PRank different user
             _resetPrank(users.bob);
@@ -147,29 +112,19 @@ contract transfer is YieldBoxUnitConcreteTest {
             // is a panic (underflow) error. `expectRevert` does not include a custom way to handle such errors, so we
             // use an `expectRevert` without a reason.
             vm.expectRevert();
-            yieldBox.transfer(
-                users.alice,
-                users.bob,
-                DAI_ASSET_ID,
-                balanceOfAfterDeposit + 1
-            );
+            yieldBox.transfer(users.alice, users.bob, DAI_ASSET_ID, balanceOfAfterDeposit + 1);
         }
     }
 
     /// @notice Tests the scenario where amount transferred exceeds balance, on behalf of shares owner by approving all.
-    function test_transferRevertWhen_ValueIsGreaterThanBalanceWhenApprovedForAll(
-        uint32 depositAmount
-    )
+    function test_transferRevertWhen_ValueIsGreaterThanBalanceWhenApprovedForAll(uint32 depositAmount)
         public
         assumeNoZeroValue(depositAmount)
         whenDeposited(DAI_ASSET_ID, users.alice, users.alice, depositAmount, 0)
         whenYieldBoxApprovedForAll(users.alice, users.bob)
-    { 
+    {
         {
-            uint256 balanceOfAfterDeposit = yieldBox.balanceOf(
-                users.alice,
-                DAI_ASSET_ID
-            );
+            uint256 balanceOfAfterDeposit = yieldBox.balanceOf(users.alice, DAI_ASSET_ID);
 
             // PRank different user
             _resetPrank(users.bob);
@@ -178,26 +133,17 @@ contract transfer is YieldBoxUnitConcreteTest {
             // is a panic (underflow) error. `expectRevert` does not include a custom way to handle such errors, so we
             // use an `expectRevert` without a reason.
             vm.expectRevert();
-            yieldBox.transfer(
-                users.alice,
-                users.bob,
-                DAI_ASSET_ID,
-                balanceOfAfterDeposit + 1
-            );
+            yieldBox.transfer(users.alice, users.bob, DAI_ASSET_ID, balanceOfAfterDeposit + 1);
         }
     }
 
     /// @notice Tests the happy path, where amount transferred is smaller or equal to share balance.
-    function test_transferWhen_ValueIsSmallerOrEqualToBalance(
-        uint64 depositAmount,
-        uint64 transferAmount
-    )
+    function test_transferWhen_ValueIsSmallerOrEqualToBalance(uint64 depositAmount, uint64 transferAmount)
         public
         assumeNoZeroValue(depositAmount)
         assumeNoZeroValue(transferAmount)
         whenDeposited(DAI_ASSET_ID, users.alice, users.alice, 0, depositAmount)
     {
-        
         // Ensure amount to transfer is valid.
         vm.assume(transferAmount <= depositAmount);
 
@@ -212,25 +158,23 @@ contract transfer is YieldBoxUnitConcreteTest {
         emit TransferSingle(users.alice, users.alice, users.bob, DAI_ASSET_ID, transferAmount);
 
         // Transfer assets.
-        yieldBox.transfer(
-            users.alice,
-            users.bob,
-            DAI_ASSET_ID,
-            transferAmount
-        );
+        yieldBox.transfer(users.alice, users.bob, DAI_ASSET_ID, transferAmount);
 
         // It should decrement `balanceOf` `from` by `value`
-        assertEq(yieldBox.balanceOf(users.alice, DAI_ASSET_ID), stateBeforeTransfer.aliceBalanceBeforeTransfer - transferAmount);
+        assertEq(
+            yieldBox.balanceOf(users.alice, DAI_ASSET_ID),
+            stateBeforeTransfer.aliceBalanceBeforeTransfer - transferAmount
+        );
 
         // It should increment `balanceOf` `to` by `value`
-        assertEq(yieldBox.balanceOf(users.bob, DAI_ASSET_ID), stateBeforeTransfer.bobBalanceBeforeTransfer + transferAmount);
+        assertEq(
+            yieldBox.balanceOf(users.bob, DAI_ASSET_ID), stateBeforeTransfer.bobBalanceBeforeTransfer + transferAmount
+        );
     }
 
     /// @notice Tests the happy path, where amount transferred is smaller or equal to share balance via asset ID approval.
     /// @dev Operator is set to `users.charlie`.
-    function test_transferWhen_ValueIsSmallerOrEqualToBalanceWhenApprovedForAssetID(
-        uint64 transferAmount
-    )
+    function test_transferWhen_ValueIsSmallerOrEqualToBalanceWhenApprovedForAssetID(uint64 transferAmount)
         public
         assumeNoZeroValue(transferAmount)
         whenDeposited(DAI_ASSET_ID, users.alice, users.alice, 0, MEDIUM_AMOUNT)
@@ -238,7 +182,6 @@ contract transfer is YieldBoxUnitConcreteTest {
     {
         // Set operator
         _resetPrank(users.charlie);
-
 
         // Ensure amount to transfer is valid.
         vm.assume(transferAmount <= MEDIUM_AMOUNT);
@@ -254,25 +197,23 @@ contract transfer is YieldBoxUnitConcreteTest {
         emit TransferSingle(users.charlie, users.alice, users.bob, DAI_ASSET_ID, transferAmount);
 
         // Transfer assets.
-        yieldBox.transfer(
-            users.alice,
-            users.bob,
-            DAI_ASSET_ID,
-            transferAmount
-        );
+        yieldBox.transfer(users.alice, users.bob, DAI_ASSET_ID, transferAmount);
 
         // It should decrement `balanceOf` `from` by `value`
-        assertEq(yieldBox.balanceOf(users.alice, DAI_ASSET_ID), stateBeforeTransfer.aliceBalanceBeforeTransfer - transferAmount);
+        assertEq(
+            yieldBox.balanceOf(users.alice, DAI_ASSET_ID),
+            stateBeforeTransfer.aliceBalanceBeforeTransfer - transferAmount
+        );
 
         // It should increment `balanceOf` `to` by `value`
-        assertEq(yieldBox.balanceOf(users.bob, DAI_ASSET_ID), stateBeforeTransfer.bobBalanceBeforeTransfer + transferAmount);
+        assertEq(
+            yieldBox.balanceOf(users.bob, DAI_ASSET_ID), stateBeforeTransfer.bobBalanceBeforeTransfer + transferAmount
+        );
     }
 
     /// @notice Tests the happy path, where amount transferred is smaller or equal to share balance via all approval.
     /// @dev Operator is set to `users.charlie`.
-    function test_transferWhen_ValueIsSmallerOrEqualToBalanceWhenApprovedForAll(
-        uint64 transferAmount
-    )
+    function test_transferWhen_ValueIsSmallerOrEqualToBalanceWhenApprovedForAll(uint64 transferAmount)
         public
         assumeNoZeroValue(transferAmount)
         whenDeposited(DAI_ASSET_ID, users.alice, users.alice, 0, MEDIUM_AMOUNT)
@@ -295,17 +236,17 @@ contract transfer is YieldBoxUnitConcreteTest {
         emit TransferSingle(users.charlie, users.alice, users.bob, DAI_ASSET_ID, transferAmount);
 
         // Transfer assets.
-        yieldBox.transfer(
-            users.alice,
-            users.bob,
-            DAI_ASSET_ID,
-            transferAmount
-        );
+        yieldBox.transfer(users.alice, users.bob, DAI_ASSET_ID, transferAmount);
 
         // It should decrement `balanceOf` `from` by `value`
-        assertEq(yieldBox.balanceOf(users.alice, DAI_ASSET_ID), stateBeforeTransfer.aliceBalanceBeforeTransfer - transferAmount);
+        assertEq(
+            yieldBox.balanceOf(users.alice, DAI_ASSET_ID),
+            stateBeforeTransfer.aliceBalanceBeforeTransfer - transferAmount
+        );
 
         // It should increment `balanceOf` `to` by `value`
-        assertEq(yieldBox.balanceOf(users.bob, DAI_ASSET_ID), stateBeforeTransfer.bobBalanceBeforeTransfer + transferAmount);
+        assertEq(
+            yieldBox.balanceOf(users.bob, DAI_ASSET_ID), stateBeforeTransfer.bobBalanceBeforeTransfer + transferAmount
+        );
     }
 }

@@ -68,46 +68,25 @@ abstract contract BaseTest is Utils, Events, Errors, Constants {
     /////////////////////////////////////////////////////////////////////
 
     /// @notice Modifier to approve an operator in YB via Pearlmit.
-    modifier whenApprovedViaPearlmit(
-        address _from,
-        address _operator,
-        uint256 _amount,
-        uint256 _expiration
-    ) {
-        _approveViaPearlmit({
-            from: _from,
-            operator: _operator,
-            amount: _amount,
-            expiration: _expiration
-        });
+    modifier whenApprovedViaPearlmit(address _from, address _operator, uint256 _amount, uint256 _expiration) {
+        _approveViaPearlmit({from: _from, operator: _operator, amount: _amount, expiration: _expiration});
         _;
     }
 
     /// @notice Modifier to approve an operator via regular ERC20.
-    modifier whenApprovedViaERC20(
-        address _from,
-        address _operator,
-        uint256 _amount
-    ) {
+    modifier whenApprovedViaERC20(address _from, address _operator, uint256 _amount) {
         _approveViaERC20({from: _from, operator: _operator, amount: _amount});
         _;
     }
 
     /// @notice Modifier to approve an operator for a specific asset ID via YB.
-    modifier whenYieldBoxApprovedForAssetID(
-        address _from,
-        address _operator,
-        uint256 _assetId
-    ) {
+    modifier whenYieldBoxApprovedForAssetID(address _from, address _operator, uint256 _assetId) {
         _approveYieldBoxAssetId(_from, _operator, _assetId);
         _;
     }
 
     /// @notice Modifier to approve an operator for a specific asset ID via YB.
-    modifier whenYieldBoxApprovedForMultipleAssetIDs(
-        address _from,
-        address _operator
-    ) {
+    modifier whenYieldBoxApprovedForMultipleAssetIDs(address _from, address _operator) {
         for (uint256 i = 1; i <= 3; i++) {
             _approveYieldBoxAssetId(_from, _operator, i);
         }
@@ -147,11 +126,11 @@ abstract contract BaseTest is Utils, Events, Errors, Constants {
     function _initializeUsers() internal {
         // Create users
         (users.owner, privateKeys.ownerPK) = _createUser("owner");
-        (users.alice, privateKeys.alicePK)  = _createUser("alice");
-        (users.bob, privateKeys.bobPK)  = _createUser("bob");
-        (users.charlie, privateKeys.charliePK)  = _createUser("charlie");
-        (users.david, privateKeys.davidPK)  = _createUser("david");
-        (users.eve, privateKeys.evePK)  = _createUser("eve");
+        (users.alice, privateKeys.alicePK) = _createUser("alice");
+        (users.bob, privateKeys.bobPK) = _createUser("bob");
+        (users.charlie, privateKeys.charliePK) = _createUser("charlie");
+        (users.david, privateKeys.davidPK) = _createUser("david");
+        (users.eve, privateKeys.evePK) = _createUser("eve");
 
         // Fill users array
         userAddresses.push(users.alice);
@@ -170,21 +149,11 @@ abstract contract BaseTest is Utils, Events, Errors, Constants {
         yieldBoxUriBuilder = new YieldBoxURIBuilder();
 
         // Deploy YieldBox
-        yieldBox = new YieldBox(
-            IWrappedNative(address(wrappedNative)),
-            yieldBoxUriBuilder,
-            pearlmit,
-            users.owner
-        );
+        yieldBox = new YieldBox(IWrappedNative(address(wrappedNative)), yieldBoxUriBuilder, pearlmit, users.owner);
     }
 
     /// @notice Approves all YieldBox contracts to spend assets from the address passed using Pearlmit.
-    function _approveViaPearlmit(
-        address from,
-        address operator,
-        uint256 amount,
-        uint256 expiration
-    ) internal {
+    function _approveViaPearlmit(address from, address operator, uint256 amount, uint256 expiration) internal {
         // Reset prank
         _resetPrank({msgSender: from});
 
@@ -194,38 +163,13 @@ abstract contract BaseTest is Utils, Events, Errors, Constants {
         usdt.approve(address(pearlmit), amount);
 
         // Approve via pearlmit
-        pearlmit.approve(
-            TOKEN_TYPE_ERC20,
-            address(dai),
-            0,
-            operator,
-            uint200(amount),
-            uint48(expiration)
-        );
-        pearlmit.approve(
-            TOKEN_TYPE_ERC20,
-            address(wrappedNative),
-            0,
-            operator,
-            uint200(amount),
-            uint48(expiration)
-        );
-        pearlmit.approve(
-            TOKEN_TYPE_ERC20,
-            address(usdt),
-            0,
-            operator,
-            uint200(amount),
-            uint48(expiration)
-        );
+        pearlmit.approve(TOKEN_TYPE_ERC20, address(dai), 0, operator, uint200(amount), uint48(expiration));
+        pearlmit.approve(TOKEN_TYPE_ERC20, address(wrappedNative), 0, operator, uint200(amount), uint48(expiration));
+        pearlmit.approve(TOKEN_TYPE_ERC20, address(usdt), 0, operator, uint200(amount), uint48(expiration));
     }
 
     /// @notice Approves all YieldBox contracts to spend assets from the address passed using regular ERC20.
-    function _approveViaERC20(
-        address from,
-        address operator,
-        uint256 amount
-    ) internal {
+    function _approveViaERC20(address from, address operator, uint256 amount) internal {
         // Reset prank
         _resetPrank({msgSender: from});
         // Set approvals to pearlmit
@@ -235,11 +179,7 @@ abstract contract BaseTest is Utils, Events, Errors, Constants {
     }
 
     /// @notice Approves a YieldBox asset ID to an `operator` given a `from` address.
-    function _approveYieldBoxAssetId(
-        address from,
-        address operator,
-        uint256 assetId
-    ) internal {
+    function _approveYieldBoxAssetId(address from, address operator, uint256 assetId) internal {
         _resetPrank({msgSender: from});
         yieldBox.setApprovalForAsset(operator, assetId, true);
     }
@@ -251,18 +191,12 @@ abstract contract BaseTest is Utils, Events, Errors, Constants {
     }
 
     /// @notice Generates a user, labels its address, funds it with test assets, and approves the protocol contracts.
-    function _createUser(
-        string memory name
-    ) internal returns (address payable, uint256) {
+    function _createUser(string memory name) internal returns (address payable, uint256) {
         (address user, uint256 privateKey) = makeAddrAndKey(name);
 
         vm.deal({account: user, newBalance: type(uint128).max});
         deal({token: address(dai), to: user, give: type(uint128).max});
-        deal({
-            token: address(wrappedNative),
-            to: user,
-            give: type(uint128).max
-        });
+        deal({token: address(wrappedNative), to: user, give: type(uint128).max});
         deal({token: address(usdt), to: user, give: type(uint128).max});
         return (payable(user), privateKey);
     }

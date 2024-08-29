@@ -95,12 +95,8 @@ contract depositAsset is YieldBoxUnitConcreteTest {
         // Register assets with token type ERC721 and Native and try to deposit them
 
         // ERC721's arent't allowed
-        uint256 erc721AssetId = yieldBox.registerAsset(
-            TokenType.ERC721,
-            address(dai),
-            IStrategy(address(erc721Strategy)),
-            1
-        );
+        uint256 erc721AssetId =
+            yieldBox.registerAsset(TokenType.ERC721, address(dai), IStrategy(address(erc721Strategy)), 1);
 
         vm.expectRevert(InvalidTokenType.selector);
         yieldBox.depositAsset(
@@ -139,12 +135,7 @@ contract depositAsset is YieldBoxUnitConcreteTest {
     /// @dev Precondition: Impartial user has approved the transfer via Pearlmit
     function test_depositAssetRevertWhen_PearlmitTransferFails()
         public
-        whenApprovedViaPearlmit(
-            users.alice,
-            address(yieldBox),
-            type(uint256).max,
-            block.timestamp
-        )
+        whenApprovedViaPearlmit(users.alice, address(yieldBox), type(uint256).max, block.timestamp)
     {
         // Force pearlmit transfer failure by removing ERC20 (dai) approval from impartial user
         dai.approve(address(pearlmit), 0);
@@ -180,12 +171,7 @@ contract depositAsset is YieldBoxUnitConcreteTest {
     /// @dev Precondition: Impartial user has approved the transfer via Pearlmit
     function test_depositAssetRevertWhen_ZeroDeposit()
         public
-        whenApprovedViaPearlmit(
-            users.alice,
-            address(yieldBox),
-            type(uint256).max,
-            block.timestamp
-        )
+        whenApprovedViaPearlmit(users.alice, address(yieldBox), type(uint256).max, block.timestamp)
     {
         // ERC20 transfer must fail due to zero amount being deposited.
         vm.expectRevert(InvalidZeroAmounts.selector);
@@ -200,25 +186,15 @@ contract depositAsset is YieldBoxUnitConcreteTest {
 
     /// @notice Tests happy path when depositing amount without approvals
     /// @dev Precondition: Impartial user has approved the transfer via Pearlmit
-    function test_depositAsset_AmountGreaterThanZero(
-        uint256 depositAmount
-    )
+    function test_depositAsset_AmountGreaterThanZero(uint256 depositAmount)
         public
-        whenApprovedViaPearlmit(
-            users.alice,
-            address(yieldBox),
-            type(uint256).max,
-            block.timestamp
-        )
+        whenApprovedViaPearlmit(users.alice, address(yieldBox), type(uint256).max, block.timestamp)
     {
         vm.assume(depositAmount > 0 && depositAmount <= LARGE_AMOUNT);
 
         StateBeforeDeposit memory stateBeforeDeposit;
 
-        (
-            stateBeforeDeposit.totalShare,
-            stateBeforeDeposit.totalAmount
-        ) = yieldBox.assetTotals(DAI_ASSET_ID);
+        (stateBeforeDeposit.totalShare, stateBeforeDeposit.totalAmount) = yieldBox.assetTotals(DAI_ASSET_ID);
 
         // Compute expected amount of shares
         stateBeforeDeposit.expectedShare = YieldBoxRebase._toShares({
@@ -230,13 +206,7 @@ contract depositAsset is YieldBoxUnitConcreteTest {
 
         // It should emit a `TransferSingle` event
         vm.expectEmit();
-        emit TransferSingle(
-            users.alice,
-            address(0),
-            users.alice,
-            DAI_ASSET_ID,
-            stateBeforeDeposit.expectedShare
-        );
+        emit TransferSingle(users.alice, address(0), users.alice, DAI_ASSET_ID, stateBeforeDeposit.expectedShare);
 
         // It should emit a `Deposited` event
         vm.expectEmit();
@@ -261,16 +231,10 @@ contract depositAsset is YieldBoxUnitConcreteTest {
         );
 
         // `balanceOf` of `to` should be incremented by `share`
-        assertEq(
-            yieldBox.balanceOf(users.alice, DAI_ASSET_ID),
-            stateBeforeDeposit.expectedShare
-        );
+        assertEq(yieldBox.balanceOf(users.alice, DAI_ASSET_ID), stateBeforeDeposit.expectedShare);
 
         // `totalSupply` should be incremented by `share`
-        assertEq(
-            yieldBox.totalSupply(DAI_ASSET_ID),
-            stateBeforeDeposit.expectedShare
-        );
+        assertEq(yieldBox.totalSupply(DAI_ASSET_ID), stateBeforeDeposit.expectedShare);
 
         // `strategy`'s balance should be incremented by `amount`
         assertEq(dai.balanceOf(address(daiStrategy)), depositAmount);
@@ -279,16 +243,9 @@ contract depositAsset is YieldBoxUnitConcreteTest {
     /// @notice Tests happy path when depositing amount via an operator for a given asset ID
     /// @dev Precondition: Alice has approved the transfer via Pearlmit
     /// @dev Precondition: Alice has approved Bob for asset ID
-    function test_depositAsset_AmountGreaterThanZeroViaApprovedAssetID(
-        uint256 depositAmount
-    )
+    function test_depositAsset_AmountGreaterThanZeroViaApprovedAssetID(uint256 depositAmount)
         public
-        whenApprovedViaPearlmit(
-            users.alice,
-            address(yieldBox),
-            type(uint256).max,
-            block.timestamp
-        )
+        whenApprovedViaPearlmit(users.alice, address(yieldBox), type(uint256).max, block.timestamp)
         whenYieldBoxApprovedForAssetID(users.alice, users.bob, DAI_ASSET_ID)
         resetPrank(users.bob)
     {
@@ -296,10 +253,7 @@ contract depositAsset is YieldBoxUnitConcreteTest {
 
         StateBeforeDeposit memory stateBeforeDeposit;
 
-        (
-            stateBeforeDeposit.totalShare,
-            stateBeforeDeposit.totalAmount
-        ) = yieldBox.assetTotals(DAI_ASSET_ID);
+        (stateBeforeDeposit.totalShare, stateBeforeDeposit.totalAmount) = yieldBox.assetTotals(DAI_ASSET_ID);
 
         // Compute expected amount of shares
         stateBeforeDeposit.expectedShare = YieldBoxRebase._toShares({
@@ -311,13 +265,7 @@ contract depositAsset is YieldBoxUnitConcreteTest {
 
         // It should emit a `TransferSingle` event
         vm.expectEmit();
-        emit TransferSingle(
-            users.bob,
-            address(0),
-            users.bob,
-            DAI_ASSET_ID,
-            stateBeforeDeposit.expectedShare
-        );
+        emit TransferSingle(users.bob, address(0), users.bob, DAI_ASSET_ID, stateBeforeDeposit.expectedShare);
 
         // It should emit a `Deposited` event
         vm.expectEmit();
@@ -343,16 +291,10 @@ contract depositAsset is YieldBoxUnitConcreteTest {
         );
 
         // `balanceOf` of `to` should be incremented by `share`
-        assertEq(
-            yieldBox.balanceOf(users.bob, DAI_ASSET_ID),
-            stateBeforeDeposit.expectedShare
-        );
+        assertEq(yieldBox.balanceOf(users.bob, DAI_ASSET_ID), stateBeforeDeposit.expectedShare);
 
         // `totalSupply` should be incremented by `share`
-        assertEq(
-            yieldBox.totalSupply(DAI_ASSET_ID),
-            stateBeforeDeposit.expectedShare
-        );
+        assertEq(yieldBox.totalSupply(DAI_ASSET_ID), stateBeforeDeposit.expectedShare);
 
         // `strategy`'s balance should be incremented by `amount`
         assertEq(dai.balanceOf(address(daiStrategy)), depositAmount);
@@ -361,16 +303,9 @@ contract depositAsset is YieldBoxUnitConcreteTest {
     /// @notice Tests happy path when depositing amount via an operator for all
     /// @dev Precondition: Alice has approved the transfer via Pearlmit
     /// @dev Precondition: Alice has approved Bob for all
-    function test_depositAsset_AmountGreaterThanZeroViaApprovedForAll(
-        uint256 depositAmount
-    )
+    function test_depositAsset_AmountGreaterThanZeroViaApprovedForAll(uint256 depositAmount)
         public
-        whenApprovedViaPearlmit(
-            users.alice,
-            address(yieldBox),
-            type(uint256).max,
-            block.timestamp
-        )
+        whenApprovedViaPearlmit(users.alice, address(yieldBox), type(uint256).max, block.timestamp)
         whenYieldBoxApprovedForAll(users.alice, users.bob)
         resetPrank(users.bob)
     {
@@ -378,10 +313,7 @@ contract depositAsset is YieldBoxUnitConcreteTest {
 
         StateBeforeDeposit memory stateBeforeDeposit;
 
-        (
-            stateBeforeDeposit.totalShare,
-            stateBeforeDeposit.totalAmount
-        ) = yieldBox.assetTotals(DAI_ASSET_ID);
+        (stateBeforeDeposit.totalShare, stateBeforeDeposit.totalAmount) = yieldBox.assetTotals(DAI_ASSET_ID);
 
         // Compute expected amount of shares
         stateBeforeDeposit.expectedShare = YieldBoxRebase._toShares({
@@ -393,13 +325,7 @@ contract depositAsset is YieldBoxUnitConcreteTest {
 
         // It should emit a `TransferSingle` event
         vm.expectEmit();
-        emit TransferSingle(
-            users.bob,
-            address(0),
-            users.bob,
-            DAI_ASSET_ID,
-            stateBeforeDeposit.expectedShare
-        );
+        emit TransferSingle(users.bob, address(0), users.bob, DAI_ASSET_ID, stateBeforeDeposit.expectedShare);
 
         // It should emit a `Deposited` event
         vm.expectEmit();
@@ -425,16 +351,10 @@ contract depositAsset is YieldBoxUnitConcreteTest {
         );
 
         // `balanceOf` of `to` should be incremented by `share`
-        assertEq(
-            yieldBox.balanceOf(users.bob, DAI_ASSET_ID),
-            stateBeforeDeposit.expectedShare
-        );
+        assertEq(yieldBox.balanceOf(users.bob, DAI_ASSET_ID), stateBeforeDeposit.expectedShare);
 
         // `totalSupply` should be incremented by `share`
-        assertEq(
-            yieldBox.totalSupply(DAI_ASSET_ID),
-            stateBeforeDeposit.expectedShare
-        );
+        assertEq(yieldBox.totalSupply(DAI_ASSET_ID), stateBeforeDeposit.expectedShare);
 
         // `strategy`'s balance should be incremented by `amount`
         assertEq(dai.balanceOf(address(daiStrategy)), depositAmount);
@@ -442,26 +362,16 @@ contract depositAsset is YieldBoxUnitConcreteTest {
 
     /// @notice Tests happy path when depositing shares
     /// @dev Precondition: Impartial user has approved the transfer via Pearlmit
-    function test_depositAsset_SharesGreaterThanZero(
-        uint256 depositShares
-    )
+    function test_depositAsset_SharesGreaterThanZero(uint256 depositShares)
         public
-        whenApprovedViaPearlmit(
-            users.alice,
-            address(yieldBox),
-            type(uint256).max,
-            block.timestamp
-        )
+        whenApprovedViaPearlmit(users.alice, address(yieldBox), type(uint256).max, block.timestamp)
     {
         // Bound depositShares amount
         vm.assume(depositShares > 0 && depositShares <= LARGE_AMOUNT);
 
         StateBeforeDeposit memory stateBeforeDeposit;
 
-        (
-            stateBeforeDeposit.totalShare,
-            stateBeforeDeposit.totalAmount
-        ) = yieldBox.assetTotals(DAI_ASSET_ID);
+        (stateBeforeDeposit.totalShare, stateBeforeDeposit.totalAmount) = yieldBox.assetTotals(DAI_ASSET_ID);
 
         // Compute expected amount of asset
         stateBeforeDeposit.expectedAmount = YieldBoxRebase._toAmount({
@@ -473,13 +383,7 @@ contract depositAsset is YieldBoxUnitConcreteTest {
 
         // It should emit a `TransferSingle` event
         vm.expectEmit();
-        emit TransferSingle(
-            users.alice,
-            address(0),
-            users.alice,
-            DAI_ASSET_ID,
-            depositShares
-        );
+        emit TransferSingle(users.alice, address(0), users.alice, DAI_ASSET_ID, depositShares);
 
         // It should emit a `Deposited` event
         vm.expectEmit();
@@ -511,25 +415,15 @@ contract depositAsset is YieldBoxUnitConcreteTest {
         assertEq(yieldBox.totalSupply(DAI_ASSET_ID), depositShares);
 
         // `strategy`'s balance should be incremented by `amount`
-        assertEq(
-            dai.balanceOf(address(daiStrategy)),
-            stateBeforeDeposit.expectedAmount
-        );
+        assertEq(dai.balanceOf(address(daiStrategy)), stateBeforeDeposit.expectedAmount);
     }
 
     /// @notice Tests happy path when depositing shares via an operator for a given asset ID
     /// @dev Precondition: Alice has approved the transfer via Pearlmit
     /// @dev Precondition: Alice has approved Bob for asset ID
-    function test_depositAsset_SharesGreaterThanZeroViaApprovedAssetID(
-        uint256 depositShares
-    )
+    function test_depositAsset_SharesGreaterThanZeroViaApprovedAssetID(uint256 depositShares)
         public
-        whenApprovedViaPearlmit(
-            users.alice,
-            address(yieldBox),
-            type(uint256).max,
-            block.timestamp
-        )
+        whenApprovedViaPearlmit(users.alice, address(yieldBox), type(uint256).max, block.timestamp)
         whenYieldBoxApprovedForAssetID(users.alice, users.bob, DAI_ASSET_ID)
         resetPrank(users.bob)
     {
@@ -538,10 +432,7 @@ contract depositAsset is YieldBoxUnitConcreteTest {
 
         StateBeforeDeposit memory stateBeforeDeposit;
 
-        (
-            stateBeforeDeposit.totalShare,
-            stateBeforeDeposit.totalAmount
-        ) = yieldBox.assetTotals(DAI_ASSET_ID);
+        (stateBeforeDeposit.totalShare, stateBeforeDeposit.totalAmount) = yieldBox.assetTotals(DAI_ASSET_ID);
 
         // Compute expected amount of asset
         stateBeforeDeposit.expectedAmount = YieldBoxRebase._toAmount({
@@ -553,13 +444,7 @@ contract depositAsset is YieldBoxUnitConcreteTest {
 
         // It should emit a `TransferSingle` event
         vm.expectEmit();
-        emit TransferSingle(
-            users.bob,
-            address(0),
-            users.bob,
-            DAI_ASSET_ID,
-            depositShares
-        );
+        emit TransferSingle(users.bob, address(0), users.bob, DAI_ASSET_ID, depositShares);
 
         // It should emit a `Deposited` event
         vm.expectEmit();
@@ -591,25 +476,15 @@ contract depositAsset is YieldBoxUnitConcreteTest {
         assertEq(yieldBox.totalSupply(DAI_ASSET_ID), depositShares);
 
         // `strategy`'s balance should be incremented by `amount`
-        assertEq(
-            dai.balanceOf(address(daiStrategy)),
-            stateBeforeDeposit.expectedAmount
-        );
+        assertEq(dai.balanceOf(address(daiStrategy)), stateBeforeDeposit.expectedAmount);
     }
 
     /// @notice Tests happy path when depositing shares via an operator for all
     /// @dev Precondition: Alice has approved the transfer via Pearlmit
     /// @dev Precondition: Alice has approved Bob for all
-    function test_depositAsset_SharesGreaterThanZeroViaApprovedForAll(
-        uint256 depositShares
-    )
+    function test_depositAsset_SharesGreaterThanZeroViaApprovedForAll(uint256 depositShares)
         public
-        whenApprovedViaPearlmit(
-            users.alice,
-            address(yieldBox),
-            type(uint256).max,
-            block.timestamp
-        )
+        whenApprovedViaPearlmit(users.alice, address(yieldBox), type(uint256).max, block.timestamp)
         whenYieldBoxApprovedForAll(users.alice, users.bob)
         resetPrank(users.bob)
     {
@@ -618,10 +493,7 @@ contract depositAsset is YieldBoxUnitConcreteTest {
 
         StateBeforeDeposit memory stateBeforeDeposit;
 
-        (
-            stateBeforeDeposit.totalShare,
-            stateBeforeDeposit.totalAmount
-        ) = yieldBox.assetTotals(DAI_ASSET_ID);
+        (stateBeforeDeposit.totalShare, stateBeforeDeposit.totalAmount) = yieldBox.assetTotals(DAI_ASSET_ID);
 
         // Compute expected amount of asset
         stateBeforeDeposit.expectedAmount = YieldBoxRebase._toAmount({
@@ -633,13 +505,7 @@ contract depositAsset is YieldBoxUnitConcreteTest {
 
         // It should emit a `TransferSingle` event
         vm.expectEmit();
-        emit TransferSingle(
-            users.bob,
-            address(0),
-            users.bob,
-            DAI_ASSET_ID,
-            depositShares
-        );
+        emit TransferSingle(users.bob, address(0), users.bob, DAI_ASSET_ID, depositShares);
 
         // It should emit a `Deposited` event
         vm.expectEmit();
@@ -671,9 +537,6 @@ contract depositAsset is YieldBoxUnitConcreteTest {
         assertEq(yieldBox.totalSupply(DAI_ASSET_ID), depositShares);
 
         // `strategy`'s balance should be incremented by `amount`
-        assertEq(
-            dai.balanceOf(address(daiStrategy)),
-            stateBeforeDeposit.expectedAmount
-        );
+        assertEq(dai.balanceOf(address(daiStrategy)), stateBeforeDeposit.expectedAmount);
     }
 }

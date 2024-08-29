@@ -24,20 +24,12 @@ contract ConstructorYieldBoxPermit is BaseTest {
     //                    INTERNAL HELPERS                             //
     /////////////////////////////////////////////////////////////////////
 
-    function _buildExpectedDomainSeparator(
-        string memory name,
-        string memory version
-    ) private view returns (bytes32) {
-        return
-            keccak256(
-                abi.encode(
-                    EIP_712_TYPE_HASH,
-                    keccak256(bytes(name)),
-                    keccak256(bytes(version)),
-                    block.chainid,
-                    address(yieldBox)
-                )
-            );
+    function _buildExpectedDomainSeparator(string memory name, string memory version) private view returns (bytes32) {
+        return keccak256(
+            abi.encode(
+                EIP_712_TYPE_HASH, keccak256(bytes(name)), keccak256(bytes(version)), block.chainid, address(yieldBox)
+            )
+        );
     }
 
     /////////////////////////////////////////////////////////////////////
@@ -53,9 +45,6 @@ contract ConstructorYieldBoxPermit is BaseTest {
         //  - version: "1"
         //  - chain ID: `block.chainid`
         //  - _cachedDomainSeparator: `_buildExpectedDomainSeparator`
-        assertEq(
-            _buildExpectedDomainSeparator("YieldBox", "1"),
-            yieldBox.DOMAIN_SEPARATOR()
-        );
+        assertEq(_buildExpectedDomainSeparator("YieldBox", "1"), yieldBox.DOMAIN_SEPARATOR());
     }
 }

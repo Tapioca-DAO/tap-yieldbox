@@ -26,28 +26,18 @@ abstract contract Constants {
     //                       EIP 712                                   //
     /////////////////////////////////////////////////////////////////////
     bytes32 constant EIP_712_TYPE_HASH =
-        keccak256(
-            "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"
-        );
+        keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)");
 
     /////////////////////////////////////////////////////////////////////
     //                       PERMIT                                    //
     /////////////////////////////////////////////////////////////////////
     bytes32 constant PERMIT_TYPEHASH =
-        keccak256(
-            "Permit(address owner,address spender,uint256 assetId,uint256 nonce,uint256 deadline)"
-        );
+        keccak256("Permit(address owner,address spender,uint256 assetId,uint256 nonce,uint256 deadline)");
     bytes32 constant REVOKE_TYPEHASH =
-        keccak256(
-            "Revoke(address owner,address spender,uint256 assetId,uint256 nonce,uint256 deadline)"
-        );
+        keccak256("Revoke(address owner,address spender,uint256 assetId,uint256 nonce,uint256 deadline)");
 
     bytes32 constant PERMIT_ALL_TYPEHASH =
-        keccak256(
-            "PermitAll(address owner,address spender,uint256 nonce,uint256 deadline)"
-        );
+        keccak256("PermitAll(address owner,address spender,uint256 nonce,uint256 deadline)");
     bytes32 constant REVOKE_ALL_TYPEHASH =
-        keccak256(
-            "RevokeAll(address owner,address spender,uint256 nonce,uint256 deadline)"
-        );
+        keccak256("RevokeAll(address owner,address spender,uint256 nonce,uint256 deadline)");
 }

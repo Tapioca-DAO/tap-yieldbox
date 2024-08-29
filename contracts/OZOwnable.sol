@@ -30,7 +30,7 @@ abstract contract OZOwnable is Context {
     constructor() {
         _transferOwnership(_msgSender());
     }
- 
+
     /**
      * @dev Throws if called by any account other than the owner.
      */

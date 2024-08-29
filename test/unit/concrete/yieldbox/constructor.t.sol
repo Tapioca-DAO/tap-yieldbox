@@ -10,7 +10,6 @@ import {YieldBox, Pearlmit} from "contracts/YieldBox.sol";
 import "contracts/interfaces/IWrappedNative.sol";
 
 contract ConstructorYB is YieldBoxUnitConcreteTest {
-    
     /////////////////////////////////////////////////////////////////////
     //                         SETUP                                   //
     /////////////////////////////////////////////////////////////////////
@@ -22,14 +21,13 @@ contract ConstructorYB is YieldBoxUnitConcreteTest {
     //                          TESTS                                  //
     /////////////////////////////////////////////////////////////////////
     function test_constructorYieldBox() public {
-        
         // It should emit an `OwnershipTransferred` event
         // Ownership is transferred from deployer to specified `owner_`
         vm.expectEmit();
         emit OwnershipTransferred(address(users.alice), address(users.owner));
 
         // Deploy YieldBox
-        YieldBox yieldBoxTest = new YieldBox( 
+        YieldBox yieldBoxTest = new YieldBox(
             IWrappedNative(address(wrappedNative)), // `wrappedNative_`
             yieldBoxUriBuilder, // `uriBuilder_`
             pearlmit, // `pearlmit_`
@@ -45,7 +43,7 @@ contract ConstructorYB is YieldBoxUnitConcreteTest {
         // `pearlmit` should be set to `pearlmit_`
         assertEq(address(yieldBoxTest.pearlmit()), address(pearlmit));
 
-        // contract owner should be set to `owner_` 
+        // contract owner should be set to `owner_`
         assertEq(address(yieldBoxTest.contractOwner()), address(users.owner));
     }
 }

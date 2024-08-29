@@ -7,13 +7,11 @@ import {YieldBoxUnitConcreteTest} from "./YieldBox.t.sol";
 import {Pearlmit} from "tap-utils/pearlmit/Pearlmit.sol";
 
 contract setApprovalForAll is YieldBoxUnitConcreteTest {
-
     /////////////////////////////////////////////////////////////////////
     //                          SETUP                                  //
     /////////////////////////////////////////////////////////////////////
     function setUp() public override {
         super.setUp();
-
     }
 
     /////////////////////////////////////////////////////////////////////
@@ -35,18 +33,18 @@ contract setApprovalForAll is YieldBoxUnitConcreteTest {
     }
 
     /// @notice Tests the happy path scenario where `operator` is approved for all.
-    function test_setApprovalForAll_SetApprovalToCorrectOperator(address operator, bool value) public assumeNoZeroValue(uint256(uint160(operator))) {
-        
+    function test_setApprovalForAll_SetApprovalToCorrectOperator(address operator, bool value)
+        public
+        assumeNoZeroValue(uint256(uint160(operator)))
+    {
         // Emit expected event
         vm.expectEmit();
         emit ApprovalForAll(users.alice, operator, value);
-        
+
         // Set approval
         yieldBox.setApprovalForAll(operator, value);
 
         // Check new approval for all has been properly added.
         assertEq(yieldBox.isApprovedForAll(users.alice, operator), value);
     }
-
-   
 }

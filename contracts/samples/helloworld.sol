@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
+
 import "../YieldBox.sol";
 
 // An example a contract that stores tokens in the YieldBox.
@@ -10,12 +11,7 @@ contract HelloWorld {
 
     constructor(YieldBox _yieldBox, IERC20 token) {
         yieldBox = _yieldBox;
-        assetId = _yieldBox.registerAsset(
-            TokenType.ERC20,
-            address(token),
-            IStrategy(address(0)),
-            0
-        );
+        assetId = _yieldBox.registerAsset(TokenType.ERC20, address(token), IStrategy(address(0)), 0);
     }
 
     mapping(address => uint256) public yieldBoxShares;
@@ -25,13 +21,7 @@ contract HelloWorld {
     // Don't deposit twice, you'll lose the first deposit ;)
     function deposit(uint256 amount) public {
         uint256 shares;
-        (, shares) = yieldBox.depositAsset(
-            assetId,
-            msg.sender,
-            address(this),
-            amount,
-            0
-        );
+        (, shares) = yieldBox.depositAsset(assetId, msg.sender, address(this), amount, 0);
         yieldBoxShares[msg.sender] += shares;
     }
 
@@ -43,13 +33,7 @@ contract HelloWorld {
 
     // Withdraw all shares from the YieldBox and receive the token.
     function withdraw() public {
-        yieldBox.withdraw(
-            assetId,
-            address(this),
-            msg.sender,
-            0,
-            yieldBoxShares[msg.sender]
-        );
+        yieldBox.withdraw(assetId, address(this), msg.sender, 0, yieldBoxShares[msg.sender]);
         yieldBoxShares[msg.sender] = 0;
     }
 }

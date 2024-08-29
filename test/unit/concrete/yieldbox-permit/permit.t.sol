@@ -46,15 +46,7 @@ contract permit is YieldBoxUnitConcreteTest {
 
         // Trigger permit
         vm.expectRevert("YieldBoxPermit: expired deadline");
-        yieldBox.permit(
-            users.alice,
-            users.bob,
-            DAI_ASSET_ID,
-            deadline,
-            v,
-            r,
-            s
-        );
+        yieldBox.permit(users.alice, users.bob, DAI_ASSET_ID, deadline, v, r, s);
     }
 
     /// @notice Checks the scenario where recovered signer is different from owner
@@ -74,15 +66,7 @@ contract permit is YieldBoxUnitConcreteTest {
 
         // Trigger permit
         vm.expectRevert("YieldBoxPermit: invalid signature");
-        yieldBox.permit(
-            users.alice,
-            users.bob,
-            DAI_ASSET_ID,
-            block.timestamp,
-            v,
-            r,
-            s
-        );
+        yieldBox.permit(users.alice, users.bob, DAI_ASSET_ID, block.timestamp, v, r, s);
     }
 
     /// @notice Checks the scenario where asset ID is bigger or equal to asset count
@@ -104,15 +88,7 @@ contract permit is YieldBoxUnitConcreteTest {
 
         // Trigger permit
         vm.expectRevert(AssetNotValid.selector);
-        yieldBox.permit(
-            users.alice,
-            users.bob,
-            invalidID,
-            block.timestamp,
-            v,
-            r,
-            s
-        );
+        yieldBox.permit(users.alice, users.bob, invalidID, block.timestamp, v, r, s);
     }
 
     /// @notice Checks the scenario where asset ID is valid
@@ -134,10 +110,7 @@ contract permit is YieldBoxUnitConcreteTest {
         });
 
         // Check approval status before
-        assertEq(
-            yieldBox.isApprovedForAsset(users.alice, users.bob, DAI_ASSET_ID),
-            false
-        );
+        assertEq(yieldBox.isApprovedForAsset(users.alice, users.bob, DAI_ASSET_ID), false);
 
         // Switch sender
         _resetPrank(users.charlie);
@@ -146,21 +119,10 @@ contract permit is YieldBoxUnitConcreteTest {
         emit ApprovalForAsset(users.alice, users.bob, DAI_ASSET_ID, true);
 
         // Trigger permit.
-        yieldBox.permit(
-            users.alice,
-            users.bob,
-            DAI_ASSET_ID,
-            block.timestamp,
-            v,
-            r,
-            s
-        );
+        yieldBox.permit(users.alice, users.bob, DAI_ASSET_ID, block.timestamp, v, r, s);
 
         // Ensure user is approved after transaction
-        assertEq(
-            yieldBox.isApprovedForAsset(users.alice, users.bob, DAI_ASSET_ID),
-            true
-        );
+        assertEq(yieldBox.isApprovedForAsset(users.alice, users.bob, DAI_ASSET_ID), true);
 
         // Ensure nonce is incremented
         assertEq(currentNonce + 1, yieldBox.nonces(users.alice));

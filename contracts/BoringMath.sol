@@ -17,12 +17,7 @@ library BoringMath {
         c = uint32(a);
     }
 
-    function muldiv(
-        uint256 value,
-        uint256 mul,
-        uint256 div,
-        bool roundUp
-    ) internal pure returns (uint256 result) {
+    function muldiv(uint256 value, uint256 mul, uint256 div, bool roundUp) internal pure returns (uint256 result) {
         result = (value * mul) / div;
         if (roundUp && (result * div) / mul < value) {
             result++;

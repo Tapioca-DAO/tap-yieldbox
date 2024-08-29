@@ -19,7 +19,6 @@ import "contracts/interfaces/IWrappedNative.sol";
 import "@boringcrypto/boring-solidity/contracts/interfaces/IERC20.sol";
 
 contract registerAsset is BaseTest {
-
     /////////////////////////////////////////////////////////////////////
     //                         STORAGE                                 //
     /////////////////////////////////////////////////////////////////////
@@ -33,10 +32,7 @@ contract registerAsset is BaseTest {
         super.setUp();
 
         // Deploy strategy
-        ERC20WithoutStrategy strategy = new ERC20WithoutStrategy(
-            IYieldBox(address(yieldBox)),
-            IERC20(address(dai))
-        );
+        ERC20WithoutStrategy strategy = new ERC20WithoutStrategy(IYieldBox(address(yieldBox)), IERC20(address(dai)));
 
         daiStrategy = IStrategy(address(strategy));
     }
@@ -57,17 +53,10 @@ contract registerAsset is BaseTest {
     }
 
     /// @notice Tests the scenario where tokenType is ERC20 and token ID is not set to zero.
-    function test_registerAssetRevertWhen_ERC20WithNonZeroTokenId(
-        uint256 tokenId
-    ) public assumeNoZeroValue(tokenId) {
+    function test_registerAssetRevertWhen_ERC20WithNonZeroTokenId(uint256 tokenId) public assumeNoZeroValue(tokenId) {
         // Try to set invalid token ID for ERC20.
         vm.expectRevert("YieldBox: No tokenId for ERC20");
-        yieldBox.registerAsset(
-            TokenType.ERC20,
-            address(dai),
-            daiStrategy,
-            tokenId
-        );
+        yieldBox.registerAsset(TokenType.ERC20, address(dai), daiStrategy, tokenId);
     }
 
     /// @notice Tests the scenario where strategy's tokenType differs from supplied token type
@@ -83,9 +72,7 @@ contract registerAsset is BaseTest {
     }
 
     /// @notice Tests the scenario where strategy's contract address differs from supplied token address
-    function test_registerAssetRevertWhen_WrongStrategyContractAddress()
-        public
-    {
+    function test_registerAssetRevertWhen_WrongStrategyContractAddress() public {
         // Try to set invalid token type for the strategy
         vm.expectRevert("YieldBox: Strategy mismatch");
         yieldBox.registerAsset(
@@ -97,19 +84,15 @@ contract registerAsset is BaseTest {
     }
 
     /// @notice Tests the scenario where strategy's tokenId differs from supplied token ID
-    function test_registerAssetRevertWhen_WrongStrategyTokenId(
-        uint256 tokenIdStrategy,
-        uint256 invalidTokenId
-    ) public {
+    function test_registerAssetRevertWhen_WrongStrategyTokenId(uint256 tokenIdStrategy, uint256 invalidTokenId)
+        public
+    {
         // Assume different values
         vm.assume(tokenIdStrategy != invalidTokenId);
 
         // Deploy mock strategy for this specific scenario
-        ERC721WithoutStrategy strategyERC721 = new ERC721WithoutStrategy(
-            IYieldBox(address(yieldBox)),
-            address(dai),
-            tokenIdStrategy
-        );
+        ERC721WithoutStrategy strategyERC721 =
+            new ERC721WithoutStrategy(IYieldBox(address(yieldBox)), address(dai), tokenIdStrategy);
         // Try to set invalid token type for the strategy
         vm.expectRevert("YieldBox: Strategy mismatch");
         yieldBox.registerAsset(
@@ -138,12 +121,7 @@ contract registerAsset is BaseTest {
         yieldBox.registerAsset(TokenType.ERC20, address(dai), daiStrategy, 0);
 
         // ensure `assets` has been updated with the proper data
-        (
-            TokenType tokenType,
-            address contractAddress,
-            IStrategy strategy,
-            uint256 tokenId
-        ) = yieldBox.assets(1);
+        (TokenType tokenType, address contractAddress, IStrategy strategy, uint256 tokenId) = yieldBox.assets(1);
 
         assertEq(uint256(tokenType), uint256(TokenType.ERC20));
         assertEq(contractAddress, address(dai));

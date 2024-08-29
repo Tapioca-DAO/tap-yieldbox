@@ -19,7 +19,7 @@ contract ConstructorAssetRegister is BaseTest {
     function setUp() public override {
         super.setUp();
     }
-    
+
     /////////////////////////////////////////////////////////////////////
     //                         TESTS                                   //
     /////////////////////////////////////////////////////////////////////
@@ -33,10 +33,7 @@ contract ConstructorAssetRegister is BaseTest {
         );
 
         // ID zero is reserved for empty asset
-        assertEq(
-            yieldBox.ids(TokenType.None, address(0), IStrategy(address(0)), 0),
-            0
-        );
+        assertEq(yieldBox.ids(TokenType.None, address(0), IStrategy(address(0)), 0), 0);
 
         // `assets` should return a length of one
         assertEq(yieldBox.assetCount(), 1);

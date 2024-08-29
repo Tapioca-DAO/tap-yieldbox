@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
+
 import "@boringcrypto/boring-solidity/contracts/interfaces/IERC20.sol";
 
 interface ISwapper {
@@ -8,13 +9,9 @@ interface ISwapper {
     /// Transfers the swapped tokens of 'to' into the BentoBox using a plain ERC20 transfer.
     /// Returns the amount of tokens 'to' transferred to BentoBox.
     /// (The BentoBox skim function will be used by the caller to get the swapped funds).
-    function swap(
-        uint256 fromAssetId,
-        uint256 toAssetId,
-        address recipient,
-        uint256 shareToMin,
-        uint256 shareFrom
-    ) external returns (uint256 extraShare, uint256 shareReturned);
+    function swap(uint256 fromAssetId, uint256 toAssetId, address recipient, uint256 shareToMin, uint256 shareFrom)
+        external
+        returns (uint256 extraShare, uint256 shareReturned);
 
     /// @notice Calculates the amount of token 'from' needed to complete the swap (amountFrom),
     /// this should be less than or equal to amountFromMax.

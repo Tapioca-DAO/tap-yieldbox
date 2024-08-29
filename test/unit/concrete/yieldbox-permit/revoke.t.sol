@@ -48,15 +48,7 @@ contract revoke is YieldBoxUnitConcreteTest {
 
         // Trigger permit
         vm.expectRevert("YieldBoxPermit: expired deadline");
-        yieldBox.revoke(
-            users.alice,
-            users.bob,
-            DAI_ASSET_ID,
-            deadline,
-            v,
-            r,
-            s
-        );
+        yieldBox.revoke(users.alice, users.bob, DAI_ASSET_ID, deadline, v, r, s);
     }
 
     /// @notice Checks the scenario where recovered signer is different from owner
@@ -76,15 +68,7 @@ contract revoke is YieldBoxUnitConcreteTest {
 
         // Trigger permit
         vm.expectRevert("YieldBoxPermit: invalid signature");
-        yieldBox.revoke(
-            users.alice,
-            users.bob,
-            DAI_ASSET_ID,
-            block.timestamp,
-            v,
-            r,
-            s
-        );
+        yieldBox.revoke(users.alice, users.bob, DAI_ASSET_ID, block.timestamp, v, r, s);
     }
 
     /// @notice Checks the scenario where asset ID is bigger or equal to asset count
@@ -106,23 +90,12 @@ contract revoke is YieldBoxUnitConcreteTest {
 
         // Trigger revoke
         vm.expectRevert(AssetNotValid.selector);
-        yieldBox.revoke(
-            users.alice,
-            users.bob,
-            invalidID,
-            block.timestamp,
-            v,
-            r,
-            s
-        );
+        yieldBox.revoke(users.alice, users.bob, invalidID, block.timestamp, v, r, s);
     }
 
     /// @notice Checks the scenario where asset ID is valid
     /// @dev Transaction is triggered by a third-party user different from the signer.
-    function test_revoke_AssetIdIsValid()
-        public
-        whenYieldBoxApprovedForAssetID(users.alice, users.bob, DAI_ASSET_ID)
-    {
+    function test_revoke_AssetIdIsValid() public whenYieldBoxApprovedForAssetID(users.alice, users.bob, DAI_ASSET_ID) {
         // Fetch nonce
         uint256 currentNonce = yieldBox.nonces(users.alice);
 
@@ -139,10 +112,7 @@ contract revoke is YieldBoxUnitConcreteTest {
         });
 
         // Check approval status before. User should be approved for asset ID.
-        assertEq(
-            yieldBox.isApprovedForAsset(users.alice, users.bob, DAI_ASSET_ID),
-            true
-        );
+        assertEq(yieldBox.isApprovedForAsset(users.alice, users.bob, DAI_ASSET_ID), true);
 
         // Switch sender
         _resetPrank(users.charlie);
@@ -151,21 +121,10 @@ contract revoke is YieldBoxUnitConcreteTest {
         emit ApprovalForAsset(users.alice, users.bob, DAI_ASSET_ID, false);
 
         // Trigger revoke.
-        yieldBox.revoke(
-            users.alice,
-            users.bob,
-            DAI_ASSET_ID,
-            block.timestamp,
-            v,
-            r,
-            s
-        );
+        yieldBox.revoke(users.alice, users.bob, DAI_ASSET_ID, block.timestamp, v, r, s);
 
         // Ensure user is **NOT** approved after transaction
-        assertEq(
-            yieldBox.isApprovedForAsset(users.alice, users.bob, DAI_ASSET_ID),
-            false
-        );
+        assertEq(yieldBox.isApprovedForAsset(users.alice, users.bob, DAI_ASSET_ID), false);
 
         // Ensure nonce is incremented
         assertEq(currentNonce + 1, yieldBox.nonces(users.alice));

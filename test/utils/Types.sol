@@ -14,7 +14,6 @@ struct Users {
     address payable david;
     // Malicious user.
     address payable eve;
-
 }
 
 struct PrivateKeys {
@@ -30,5 +29,4 @@ struct PrivateKeys {
     uint256 davidPK;
     // Malicious user's PK.
     uint256 evePK;
-
 }

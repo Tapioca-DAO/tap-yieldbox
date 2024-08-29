@@ -52,7 +52,7 @@ import {OZOwnable} from "./OZOwnable.sol";
 /// Yield from this will go to the token depositors.
 /// Any funds transfered directly onto the YieldBox will be lost, use the deposit function instead.
 contract YieldBox is
-    YieldBoxPermit, 
+    YieldBoxPermit,
     BoringBatchable,
     NativeTokenFactory,
     ERC721TokenReceiver,
@@ -114,12 +114,9 @@ contract YieldBox is
     YieldBoxURIBuilder public immutable uriBuilder;
     Pearlmit public pearlmit;
 
-    constructor(
-        IWrappedNative wrappedNative_,
-        YieldBoxURIBuilder uriBuilder_,
-        Pearlmit pearlmit_,
-        address owner_
-    ) YieldBoxPermit("YieldBox") {
+    constructor(IWrappedNative wrappedNative_, YieldBoxURIBuilder uriBuilder_, Pearlmit pearlmit_, address owner_)
+        YieldBoxPermit("YieldBox")
+    {
         wrappedNative = wrappedNative_;
         uriBuilder = uriBuilder_;
         pearlmit = pearlmit_;
@@ -132,9 +129,7 @@ contract YieldBox is
 
     /// @dev Returns the total balance of `token` the strategy contract holds,
     /// plus the total amount this contract thinks the strategy holds.
-    function _tokenBalanceOf(
-        Asset storage asset
-    ) internal view returns (uint256 amount) {
+    function _tokenBalanceOf(Asset storage asset) internal view returns (uint256 amount) {
         return asset.strategy.currentBalance();
     }
 
@@ -150,13 +145,7 @@ contract YieldBox is
     /// @param share Token amount represented in shares to deposit. Takes precedence over `amount`.
     /// @return amountOut The amount deposited.
     /// @return shareOut The deposited amount repesented in shares.
-    function depositAsset(
-        uint256 assetId,
-        address from,
-        address to,
-        uint256 amount,
-        uint256 share
-    )
+    function depositAsset(uint256 assetId, address from, address to, uint256 amount, uint256 share)
         public
         allowed(from, assetId)
         returns (uint256 amountOut, uint256 shareOut)
@@ -164,7 +153,7 @@ contract YieldBox is
         // Checks
         Asset storage asset = assets[assetId];
         if (asset.tokenType == TokenType.Native) revert InvalidTokenType();
-        if (asset.tokenType == TokenType.ERC721) revert InvalidTokenType(); 
+        if (asset.tokenType == TokenType.ERC721) revert InvalidTokenType();
         if (asset.tokenType == TokenType.None) revert InvalidTokenType();
 
         if (share == 0 && amount == 0) revert InvalidZeroAmounts();
@@ -183,71 +172,38 @@ contract YieldBox is
 
         // Interactions
         if (asset.tokenType == TokenType.ERC20) {
-            (uint256 allowedAmount, ) = pearlmit.allowance(
-                from,
-                address(this),
-                20,
-                asset.contractAddress,
-                0
-            );
+            (uint256 allowedAmount,) = pearlmit.allowance(from, address(this), 20, asset.contractAddress, 0);
 
             // Check whether the tokens are Pearlmit approved
             if (allowedAmount >= amount) {
                 // If approved, use the Pearlmit transfer function
-                bool isErr = pearlmit.transferFromERC20(
-                    from,
-                    address(asset.strategy),
-                    asset.contractAddress,
-                    amount
-                );
+                bool isErr = pearlmit.transferFromERC20(from, address(asset.strategy), asset.contractAddress, amount);
                 if (isErr) revert PearlmitTransferFailed();
             } else {
                 // If not approved through Pearlmit, use the token transfer function
                 // For ERC20 tokens, use the safe helper function to deal with broken ERC20 implementations. This actually calls transferFrom on the ERC20 contract.
-                IERC20(asset.contractAddress).safeTransferFrom(
-                    from,
-                    address(asset.strategy),
-                    amount
-                );
+                IERC20(asset.contractAddress).safeTransferFrom(from, address(asset.strategy), amount);
             }
         } else {
             // ERC1155
             // When depositing yieldBox tokens into the yieldBox, things can be simplified
             if (asset.contractAddress == address(this)) {
-                _transferSingle(
-                    from,
-                    address(asset.strategy),
-                    asset.tokenId,
-                    amount
-                );
+                _transferSingle(from, address(asset.strategy), asset.tokenId, amount);
             } else {
-                (uint256 allowedAmount, ) = pearlmit.allowance(
-                    from,
-                    address(this),
-                    1155,
-                    asset.contractAddress,
-                    asset.tokenId
-                );
+                (uint256 allowedAmount,) =
+                    pearlmit.allowance(from, address(this), 1155, asset.contractAddress, asset.tokenId);
 
                 // Check whether the tokens are Pearlmit approved
                 if (allowedAmount >= amount) {
                     // If approved, use the Pearlmit transfer function
                     bool isErr = pearlmit.transferFromERC1155(
-                        from,
-                        address(asset.strategy),
-                        asset.contractAddress,
-                        asset.tokenId,
-                        amount
+                        from, address(asset.strategy), asset.contractAddress, asset.tokenId, amount
                     );
                     if (isErr) revert PearlmitTransferFailed();
                 } else {
                     // If not approved through Pearlmit, use the token transfer function
                     IERC1155(asset.contractAddress).safeTransferFrom(
-                        from,
-                        address(asset.strategy),
-                        asset.tokenId,
-                        amount,
-                        ""
+                        from, address(asset.strategy), asset.tokenId, amount, ""
                     );
                 }
             }
@@ -255,17 +211,7 @@ contract YieldBox is
 
         asset.strategy.deposited(amount);
 
-        emit Deposited(
-            msg.sender,
-            from,
-            to,
-            assetId,
-            amount,
-            share,
-            amountOut,
-            shareOut,
-            false
-        );
+        emit Deposited(msg.sender, from, to, assetId, amount, share, amountOut, shareOut, false);
 
         return (amount, share);
     }
@@ -276,11 +222,7 @@ contract YieldBox is
     /// @param to which account to push the tokens.
     /// @return amountOut The amount deposited.
     /// @return shareOut The deposited amount repesented in shares.
-    function depositNFTAsset(
-        uint256 assetId,
-        address from,
-        address to
-    )
+    function depositNFTAsset(uint256 assetId, address from, address to)
         public
         allowed(from, assetId)
         returns (uint256 amountOut, uint256 shareOut)
@@ -293,31 +235,17 @@ contract YieldBox is
         _mint(to, assetId, 1);
 
         // Interactions
-        (uint256 allowedAmount, ) = pearlmit.allowance(
-            from,
-            address(this),
-            721,
-            asset.contractAddress,
-            asset.tokenId
-        );
+        (uint256 allowedAmount,) = pearlmit.allowance(from, address(this), 721, asset.contractAddress, asset.tokenId);
 
         // Check whether the tokens are Pearlmit approved
         if (allowedAmount > 0) {
             // If approved, use the Pearlmit transfer function
-            bool isErr = pearlmit.transferFromERC721(
-                from,
-                address(asset.strategy),
-                asset.contractAddress,
-                asset.tokenId
-            );
+            bool isErr =
+                pearlmit.transferFromERC721(from, address(asset.strategy), asset.contractAddress, asset.tokenId);
             if (isErr) revert PearlmitTransferFailed();
         } else {
             // If not approved through Pearlmit, use the token transfer function
-            IERC721(asset.contractAddress).safeTransferFrom(
-                from,
-                address(asset.strategy),
-                asset.tokenId
-            );
+            IERC721(asset.contractAddress).safeTransferFrom(from, address(asset.strategy), asset.tokenId);
         }
 
         asset.strategy.deposited(1);
@@ -333,11 +261,11 @@ contract YieldBox is
     /// @param amount ETH amount to deposit.
     /// @return amountOut The amount deposited.
     /// @return shareOut The deposited amount repesented in shares.
-    function depositETHAsset(
-        uint256 assetId,
-        address to,
-        uint256 amount
-    ) public payable returns (uint256 amountOut, uint256 shareOut) {
+    function depositETHAsset(uint256 assetId, address to, uint256 amount)
+        public
+        payable
+        returns (uint256 amountOut, uint256 shareOut)
+    {
         // Checks
         Asset storage asset = assets[assetId];
         if (asset.tokenType != TokenType.ERC20) revert InvalidTokenType();
@@ -347,11 +275,7 @@ contract YieldBox is
         if (msg.value < amount) revert AmountTooLow();
 
         // Effects
-        uint256 share = amount._toShares(
-            totalSupply[assetId],
-            _tokenBalanceOf(asset),
-            false
-        );
+        uint256 share = amount._toShares(totalSupply[assetId], _tokenBalanceOf(asset), false);
 
         _mint(to, assetId, share);
 
@@ -362,22 +286,10 @@ contract YieldBox is
 
         asset.strategy.deposited(amount);
 
-        emit Deposited(
-            msg.sender,
-            msg.sender,
-            to,
-            assetId,
-            amount,
-            share,
-            amountOut,
-            shareOut,
-            false
-        );
+        emit Deposited(msg.sender, msg.sender, to, assetId, amount, share, amountOut, shareOut, false);
 
         if (msg.value > amount) {
-            (bool success, ) = msg.sender.call{value: msg.value - amount}(
-                new bytes(0)
-            );
+            (bool success,) = msg.sender.call{value: msg.value - amount}(new bytes(0));
             if (!success) revert RefundFailed();
         }
 
@@ -390,13 +302,7 @@ contract YieldBox is
     /// @param to which user to push the tokens.
     /// @param amount of tokens. Either one of `amount` or `share` needs to be supplied.
     /// @param share Like above, but `share` takes precedence over `amount`.
-    function withdraw(
-        uint256 assetId,
-        address from,
-        address to,
-        uint256 amount,
-        uint256 share
-    )
+    function withdraw(uint256 assetId, address from, address to, uint256 amount, uint256 share)
         public
         allowed(from, assetId)
         returns (uint256 amountOut, uint256 shareOut)
@@ -418,12 +324,10 @@ contract YieldBox is
     /// @param assetId The id of the asset.
     /// @param from which user to pull the tokens.
     /// @param to which user to push the tokens.
-    function _withdrawNFT(
-        Asset storage asset,
-        uint256 assetId,
-        address from,
-        address to
-    ) internal returns (uint256 amountOut, uint256 shareOut) {
+    function _withdrawNFT(Asset storage asset, uint256 assetId, address from, address to)
+        internal
+        returns (uint256 amountOut, uint256 shareOut)
+    {
         _burn(from, assetId, 1);
 
         // Interactions
@@ -465,16 +369,7 @@ contract YieldBox is
         // Interactions
         asset.strategy.withdraw(to, amount);
 
-        emit Withdraw(
-            msg.sender,
-            from,
-            to,
-            assetId,
-            amount,
-            share,
-            amountOut,
-            shareOut
-        );
+        emit Withdraw(msg.sender, from, to, assetId, amount, share, amountOut, shareOut);
 
         return (amount, share);
     }
@@ -484,41 +379,26 @@ contract YieldBox is
     /// @param to which user to push the tokens.
     /// @param assetId The id of the asset.
     /// @param share The amount of `token` in shares.
-    function transfer(
-        address from,
-        address to,
-        uint256 assetId,
-        uint256 share
-    ) public allowed(from, assetId) {
+    function transfer(address from, address to, uint256 assetId, uint256 share) public allowed(from, assetId) {
         _transferSingle(from, to, assetId, share);
     }
 
-    function batchTransfer(
-        address from,
-        address to,
-        uint256[] calldata assetIds_,
-        uint256[] calldata shares_
-    ) public {
+    function batchTransfer(address from, address to, uint256[] calldata assetIds_, uint256[] calldata shares_) public {
         uint256 len = assetIds_.length;
 
         unchecked {
             for (uint256 i; i < len; i++) {
-                _requireTransferAllowed(
-                    from,
-                    isApprovedForAsset[from][msg.sender][assetIds_[i]]
-                );
+                _requireTransferAllowed(from, isApprovedForAsset[from][msg.sender][assetIds_[i]]);
             }
         }
 
         _transferBatch(from, to, assetIds_, shares_);
     }
 
-    function _transferBatch(
-        address from,
-        address to,
-        uint256[] calldata ids,
-        uint256[] calldata values
-    ) internal override {
+    function _transferBatch(address from, address to, uint256[] calldata ids, uint256[] calldata values)
+        internal
+        override
+    {
         if (to == address(0)) revert ZeroAddress();
 
         uint256 len = ids.length;
@@ -536,12 +416,10 @@ contract YieldBox is
     /// @param from which user to pull the tokens.
     /// @param tos The receivers of the tokens.
     /// @param shares The amount of `token` in shares for each receiver in `tos`.
-    function transferMultiple(
-        address from,
-        address[] calldata tos,
-        uint256 assetId,
-        uint256[] calldata shares
-    ) public allowed(from, assetId) {
+    function transferMultiple(address from, address[] calldata tos, uint256 assetId, uint256[] calldata shares)
+        public
+        allowed(from, assetId)
+    {
         uint256 len = tos.length;
         uint256 _totalShares;
 
@@ -557,10 +435,7 @@ contract YieldBox is
     /// @notice Update approval status for an operator
     /// @param operator The address approved to perform actions on your behalf
     /// @param approved True/False
-    function setApprovalForAll(
-        address operator,
-        bool approved
-    ) external override {
+    function setApprovalForAll(address operator, bool approved) external override {
         // Checks
         if (operator == address(0)) revert NotSet();
         if (operator == address(this)) revert ForbiddenAction();
@@ -568,16 +443,12 @@ contract YieldBox is
         // Effects
         _setApprovalForAll(msg.sender, operator, approved);
     }
- 
+
     /// @notice Update approval status for an operator
     /// @param _owner The YieldBox account owner
     /// @param operator The address approved to perform actions on your behalf
     /// @param approved True/False
-    function _setApprovalForAll(
-        address _owner,
-        address operator,
-        bool approved
-    ) internal override {
+    function _setApprovalForAll(address _owner, address operator, bool approved) internal override {
         isApprovedForAll[_owner][operator] = approved;
         emit ApprovalForAll(_owner, operator, approved);
     }
@@ -586,11 +457,7 @@ contract YieldBox is
     /// @param operator The address approved to perform actions on your behalf
     /// @param assetId The asset id  to update approval status for
     /// @param approved True/False
-    function setApprovalForAsset(
-        address operator,
-        uint256 assetId,
-        bool approved
-    ) external override {
+    function setApprovalForAsset(address operator, uint256 assetId, bool approved) external override {
         // Checks
         if (operator == address(0)) revert NotSet();
         if (operator == address(this)) revert ForbiddenAction();
@@ -604,12 +471,7 @@ contract YieldBox is
     /// @param operator The address approved to perform actions on your behalf
     /// @param assetId The asset id  to update approval status for
     /// @param approved True/False
-    function _setApprovalForAsset(
-        address _owner,
-        address operator,
-        uint256 assetId,
-        bool approved
-    ) internal override {
+    function _setApprovalForAsset(address _owner, address operator, uint256 assetId, bool approved) internal override {
         if (assetId >= assetCount()) revert AssetNotValid();
         isApprovedForAsset[_owner][operator][assetId] = approved;
         emit ApprovalForAsset(_owner, operator, assetId, approved);
@@ -617,16 +479,8 @@ contract YieldBox is
 
     // This functionality has been split off into a separate contract. This is only a view function, so gas usage isn't a huge issue.
     // This keeps the YieldBox contract smaller, so it can be optimized more.
-    function uri(
-        uint256 assetId
-    ) external view override returns (string memory) {
-        return
-            uriBuilder.uri(
-                assets[assetId],
-                nativeTokens[assetId],
-                totalSupply[assetId],
-                owner[assetId]
-            );
+    function uri(uint256 assetId) external view override returns (string memory) {
+        return uriBuilder.uri(assets[assetId], nativeTokens[assetId], totalSupply[assetId], owner[assetId]);
     }
 
     function name(uint256 assetId) external view returns (string memory) {
@@ -638,11 +492,7 @@ contract YieldBox is
     }
 
     function decimals(uint256 assetId) external view returns (uint8) {
-        return
-            uriBuilder.decimals(
-                assets[assetId],
-                nativeTokens[assetId].decimals
-            );
+        return uriBuilder.decimals(assets[assetId], nativeTokens[assetId].decimals);
     }
 
     // Helper functions
@@ -651,9 +501,7 @@ contract YieldBox is
     /// @param assetId The regierestered asset id
     /// @return totalShare The total amount for asset represented in shares
     /// @return totalAmount The total amount for asset
-    function assetTotals(
-        uint256 assetId
-    ) external view returns (uint256 totalShare, uint256 totalAmount) {
+    function assetTotals(uint256 assetId) external view returns (uint256 totalShare, uint256 totalAmount) {
         totalShare = totalSupply[assetId];
         totalAmount = _tokenBalanceOf(assets[assetId]);
     }
@@ -663,22 +511,11 @@ contract YieldBox is
     /// @param amount The `token` amount.
     /// @param roundUp If the result `share` should be rounded up.
     /// @return share The token amount represented in shares.
-    function toShare(
-        uint256 assetId,
-        uint256 amount,
-        bool roundUp
-    ) external view returns (uint256 share) {
-        if (
-            assets[assetId].tokenType == TokenType.Native ||
-            assets[assetId].tokenType == TokenType.ERC721
-        ) {
+    function toShare(uint256 assetId, uint256 amount, bool roundUp) external view returns (uint256 share) {
+        if (assets[assetId].tokenType == TokenType.Native || assets[assetId].tokenType == TokenType.ERC721) {
             share = amount;
         } else {
-            share = amount._toShares(
-                totalSupply[assetId],
-                _tokenBalanceOf(assets[assetId]),
-                roundUp
-            );
+            share = amount._toShares(totalSupply[assetId], _tokenBalanceOf(assets[assetId]), roundUp);
         }
     }
 
@@ -687,43 +524,22 @@ contract YieldBox is
     /// @param share The amount of shares.
     /// @param roundUp If the result should be rounded up.
     /// @return amount The share amount back into native representation.
-    function toAmount(
-        uint256 assetId,
-        uint256 share,
-        bool roundUp
-    ) external view returns (uint256 amount) {
-        if (
-            assets[assetId].tokenType == TokenType.Native ||
-            assets[assetId].tokenType == TokenType.ERC721
-        ) {
+    function toAmount(uint256 assetId, uint256 share, bool roundUp) external view returns (uint256 amount) {
+        if (assets[assetId].tokenType == TokenType.Native || assets[assetId].tokenType == TokenType.ERC721) {
             amount = share;
         } else {
-            amount = share._toAmount(
-                totalSupply[assetId],
-                _tokenBalanceOf(assets[assetId]),
-                roundUp
-            );
+            amount = share._toAmount(totalSupply[assetId], _tokenBalanceOf(assets[assetId]), roundUp);
         }
     }
 
     /// @dev Helper function represent the balance in `token` amount for a `user` for an `asset`.
     /// @param user The `user` to get the amount for.
     /// @param assetId The id of the asset.
-    function amountOf(
-        address user,
-        uint256 assetId
-    ) external view returns (uint256 amount) {
-        if (
-            assets[assetId].tokenType == TokenType.Native ||
-            assets[assetId].tokenType == TokenType.ERC721
-        ) {
+    function amountOf(address user, uint256 assetId) external view returns (uint256 amount) {
+        if (assets[assetId].tokenType == TokenType.Native || assets[assetId].tokenType == TokenType.ERC721) {
             amount = balanceOf[user][assetId];
         } else {
-            amount = balanceOf[user][assetId]._toAmount(
-                totalSupply[assetId],
-                _tokenBalanceOf(assets[assetId]),
-                false
-            );
+            amount = balanceOf[user][assetId]._toAmount(totalSupply[assetId], _tokenBalanceOf(assets[assetId]), false);
         }
     }
 
@@ -750,33 +566,11 @@ contract YieldBox is
     ) public returns (uint256 amountOut, uint256 shareOut) {
         if (tokenType == TokenType.Native) {
             // If native token, register it as an ERC1155 asset (as that's what it is)
-            return
-                depositAsset(
-                    registerAsset(
-                        TokenType.ERC1155,
-                        address(this),
-                        strategy,
-                        tokenId
-                    ),
-                    from,
-                    to,
-                    amount,
-                    share
-                );
+            return depositAsset(
+                registerAsset(TokenType.ERC1155, address(this), strategy, tokenId), from, to, amount, share
+            );
         } else {
-            return
-                depositAsset(
-                    registerAsset(
-                        tokenType,
-                        contractAddress,
-                        strategy,
-                        tokenId
-                    ),
-                    from,
-                    to,
-                    amount,
-                    share
-                );
+            return depositAsset(registerAsset(tokenType, contractAddress, strategy, tokenId), from, to, amount, share);
         }
     }
 
@@ -785,22 +579,12 @@ contract YieldBox is
     /// @param amount amount to deposit.
     /// @return amountOut The amount deposited.
     /// @return shareOut The deposited amount repesented in shares.
-    function depositETH(
-        IStrategy strategy,
-        address to,
-        uint256 amount
-    ) public payable returns (uint256 amountOut, uint256 shareOut) {
-        return
-            depositETHAsset(
-                registerAsset(
-                    TokenType.ERC20,
-                    address(wrappedNative),
-                    strategy,
-                    0
-                ),
-                to,
-                amount
-            );
+    function depositETH(IStrategy strategy, address to, uint256 amount)
+        public
+        payable
+        returns (uint256 amountOut, uint256 shareOut)
+    {
+        return depositETHAsset(registerAsset(TokenType.ERC20, address(wrappedNative), strategy, 0), to, amount);
     }
 
     // ******************* //

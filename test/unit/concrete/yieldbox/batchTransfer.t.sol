@@ -27,11 +27,11 @@ contract batchTransfer is YieldBoxUnitConcreteTest {
     /////////////////////////////////////////////////////////////////////
     //                          INTERNAL HELPERS                       //
     /////////////////////////////////////////////////////////////////////
-    function _buildBatchTransferRequiredData(
-        uint256[] memory assetIds,
-        uint256[] memory amounts,
-        uint256 amount
-    ) internal view returns (address[] memory, uint256[] memory) {
+    function _buildBatchTransferRequiredData(uint256[] memory assetIds, uint256[] memory amounts, uint256 amount)
+        internal
+        view
+        returns (address[] memory, uint256[] memory)
+    {
         // Build array of asset Id's
         assetIds[0] = DAI_ASSET_ID;
         assetIds[1] = WRAPPED_NATIVE_ASSET_ID;
@@ -52,28 +52,22 @@ contract batchTransfer is YieldBoxUnitConcreteTest {
         for (uint256 i = 0; i < 3; i++) {
             assertEq(
                 yieldBox.balanceOf(to, i + 1), // assetId is represented by i + 1
-                positive
-                    ? previousBalances[i] + amounts[i]
-                    : previousBalances[i] - amounts[i]
+                positive ? previousBalances[i] + amounts[i] : previousBalances[i] - amounts[i]
             );
         }
     }
 
-    function _fetchMultipleBalances(
-        uint256[] memory previousBalances,
-        address to
-    ) internal view returns (uint256[] memory) {
+    function _fetchMultipleBalances(uint256[] memory previousBalances, address to)
+        internal
+        view
+        returns (uint256[] memory)
+    {
         for (uint256 i; i < 3; i++) {
             previousBalances[i] = yieldBox.balanceOf(to, i + 1);
         }
     }
 
-    function _triggerExpectEmit(
-        address operator,
-        address from,
-        address to,
-        uint256[] memory amounts
-    ) internal {
+    function _triggerExpectEmit(address operator, address from, address to, uint256[] memory amounts) internal {
         uint256[] memory ids = new uint256[](3);
         ids[0] = DAI_ASSET_ID;
         ids[1] = WRAPPED_NATIVE_ASSET_ID;
@@ -97,9 +91,7 @@ contract batchTransfer is YieldBoxUnitConcreteTest {
     /// @dev `from not being allowed implies the following:
     ///     - `from` is different from `msg.sender`
     ///     - `from` has not approved `msg.sender` for the given asset ID's
-    function test_batchTransferRevertWhen_CallerIsNotAllowed(
-        uint64 depositAmount
-    )
+    function test_batchTransferRevertWhen_CallerIsNotAllowed(uint64 depositAmount)
         public
         assumeGtE(depositAmount, 3)
         whenDepositedAll(users.alice, users.alice, 0, depositAmount)
@@ -113,35 +105,28 @@ contract batchTransfer is YieldBoxUnitConcreteTest {
         stateBeforeBatchTransfer.amounts = new uint256[](3);
 
         _buildBatchTransferRequiredData(
-            stateBeforeBatchTransfer.assetIds,
-            stateBeforeBatchTransfer.amounts,
-            depositAmount
+            stateBeforeBatchTransfer.assetIds, stateBeforeBatchTransfer.amounts, depositAmount
         );
 
         // Try to transfer assets on behalf of impartial user
         vm.expectRevert("Transfer not allowed");
         yieldBox.batchTransfer(
-            users.alice,
-            users.bob,
-            stateBeforeBatchTransfer.assetIds,
-            stateBeforeBatchTransfer.amounts
+            users.alice, users.bob, stateBeforeBatchTransfer.assetIds, stateBeforeBatchTransfer.amounts
         );
     }
 
     /// @notice Tests the scenario where one of `assetId`'s is not registered
-    function test_batchTransferRevertWhen_AssetIdNotRegistered(
-        uint64 depositAmount,
-        uint16 rand
-    ) public assumeGtE(depositAmount, 3) {
+    function test_batchTransferRevertWhen_AssetIdNotRegistered(uint64 depositAmount, uint16 rand)
+        public
+        assumeGtE(depositAmount, 3)
+    {
         // Initialize required data
         StateBeforeBatchTransfer memory stateBeforeBatchTransfer;
         stateBeforeBatchTransfer.assetIds = new uint256[](3);
         stateBeforeBatchTransfer.amounts = new uint256[](3);
 
         _buildBatchTransferRequiredData(
-            stateBeforeBatchTransfer.assetIds,
-            stateBeforeBatchTransfer.amounts,
-            depositAmount
+            stateBeforeBatchTransfer.assetIds, stateBeforeBatchTransfer.amounts, depositAmount
         );
 
         // Force one of assetId's to be unsupported
@@ -150,43 +135,30 @@ contract batchTransfer is YieldBoxUnitConcreteTest {
         // Try to transfer invalid asset ID.
         vm.expectRevert();
         yieldBox.batchTransfer(
-            users.alice,
-            users.bob,
-            stateBeforeBatchTransfer.assetIds,
-            stateBeforeBatchTransfer.amounts
+            users.alice, users.bob, stateBeforeBatchTransfer.assetIds, stateBeforeBatchTransfer.amounts
         );
     }
 
     /// @notice Tests the scenario where `to` is address(0)
-    function test_batchTransferRevertWhen_ToIsZeroAddress(
-        uint64 depositAmount
-    ) public assumeGtE(depositAmount, 3) {
+    function test_batchTransferRevertWhen_ToIsZeroAddress(uint64 depositAmount) public assumeGtE(depositAmount, 3) {
         // Initialize required data
         StateBeforeBatchTransfer memory stateBeforeBatchTransfer;
         stateBeforeBatchTransfer.assetIds = new uint256[](3);
         stateBeforeBatchTransfer.amounts = new uint256[](3);
 
         _buildBatchTransferRequiredData(
-            stateBeforeBatchTransfer.assetIds,
-            stateBeforeBatchTransfer.amounts,
-            depositAmount
+            stateBeforeBatchTransfer.assetIds, stateBeforeBatchTransfer.amounts, depositAmount
         );
 
         // Try to transfer to address(0)
         vm.expectRevert(ZeroAddress.selector);
         yieldBox.batchTransfer(
-            users.alice,
-            address(0),
-            stateBeforeBatchTransfer.assetIds,
-            stateBeforeBatchTransfer.amounts
+            users.alice, address(0), stateBeforeBatchTransfer.assetIds, stateBeforeBatchTransfer.amounts
         );
     }
 
     /// @notice Tests the scenario where shares exceeds `from` balance
-    function test_batchTransferRevertWhen_SharesExceedsBalance(
-        uint64 depositAmount,
-        uint16 rand
-    )
+    function test_batchTransferRevertWhen_SharesExceedsBalance(uint64 depositAmount, uint16 rand)
         public
         assumeGtE(depositAmount, 3)
         whenDepositedAll(users.alice, users.alice, 0, depositAmount)
@@ -197,9 +169,7 @@ contract batchTransfer is YieldBoxUnitConcreteTest {
         stateBeforeBatchTransfer.amounts = new uint256[](3);
 
         _buildBatchTransferRequiredData(
-            stateBeforeBatchTransfer.assetIds,
-            stateBeforeBatchTransfer.amounts,
-            depositAmount
+            stateBeforeBatchTransfer.assetIds, stateBeforeBatchTransfer.amounts, depositAmount
         );
 
         // Force one of amounts to exceed balance be unsupported
@@ -208,17 +178,12 @@ contract batchTransfer is YieldBoxUnitConcreteTest {
         // Try to transfer more assets than held.
         vm.expectRevert();
         yieldBox.batchTransfer(
-            users.alice,
-            users.bob,
-            stateBeforeBatchTransfer.assetIds,
-            stateBeforeBatchTransfer.amounts
+            users.alice, users.bob, stateBeforeBatchTransfer.assetIds, stateBeforeBatchTransfer.amounts
         );
     }
 
     /// @notice Tests the scenario where shares are smaller or equal to `from` balance
-    function test_batchTransfer_whenValueIsSmallerOrEqualToBalance(
-        uint64 depositAmount
-    )
+    function test_batchTransfer_whenValueIsSmallerOrEqualToBalance(uint64 depositAmount)
         public
         assumeGtE(depositAmount, 3)
         whenDepositedAll(users.alice, users.alice, 0, depositAmount)
@@ -235,21 +200,13 @@ contract batchTransfer is YieldBoxUnitConcreteTest {
         stateBeforeBatchTransferAlice.previousBalances = new uint256[](3);
 
         _buildBatchTransferRequiredData(
-            stateBeforeBatchTransferBob.assetIds,
-            stateBeforeBatchTransferBob.amounts,
-            depositAmount
+            stateBeforeBatchTransferBob.assetIds, stateBeforeBatchTransferBob.amounts, depositAmount
         );
 
         // Fetch previous balances
-        _fetchMultipleBalances(
-            stateBeforeBatchTransferBob.previousBalances,
-            users.bob
-        );
+        _fetchMultipleBalances(stateBeforeBatchTransferBob.previousBalances, users.bob);
 
-        _fetchMultipleBalances(
-            stateBeforeBatchTransferAlice.previousBalances,
-            users.alice
-        );
+        _fetchMultipleBalances(stateBeforeBatchTransferAlice.previousBalances, users.alice);
 
         // it should emit a `TransferBatch` event for each iteration
         _triggerExpectEmit({
@@ -261,33 +218,22 @@ contract batchTransfer is YieldBoxUnitConcreteTest {
 
         // Transfer assets
         yieldBox.batchTransfer(
-            users.alice,
-            users.bob,
-            stateBeforeBatchTransferBob.assetIds,
-            stateBeforeBatchTransferBob.amounts
+            users.alice, users.bob, stateBeforeBatchTransferBob.assetIds, stateBeforeBatchTransferBob.amounts
         );
 
         // it should increment `balanceOf` each assed ID by its respective `shares`
         _assertExpectedBalances(
-            stateBeforeBatchTransferBob.previousBalances,
-            users.bob,
-            stateBeforeBatchTransferBob.amounts,
-            true
+            stateBeforeBatchTransferBob.previousBalances, users.bob, stateBeforeBatchTransferBob.amounts, true
         );
 
         // it should decrement `balanceOf` `from` by the total accumulated `_totalShares`
         _assertExpectedBalances(
-            stateBeforeBatchTransferAlice.previousBalances,
-            users.alice,
-            stateBeforeBatchTransferBob.amounts,
-            false
+            stateBeforeBatchTransferAlice.previousBalances, users.alice, stateBeforeBatchTransferBob.amounts, false
         );
     }
 
     /// @notice Tests the scenario where shares are smaller or equal to `from` balance via approval by asset ID
-    function test_batchTransfer_whenValueIsSmallerOrEqualToBalanceViaApprovedForAssetId(
-        uint64 depositAmount
-    )
+    function test_batchTransfer_whenValueIsSmallerOrEqualToBalanceViaApprovedForAssetId(uint64 depositAmount)
         public
         assumeGtE(depositAmount, 3)
         whenDepositedAll(users.alice, users.alice, 0, depositAmount)
@@ -305,21 +251,13 @@ contract batchTransfer is YieldBoxUnitConcreteTest {
         stateBeforeBatchTransferAlice.previousBalances = new uint256[](3);
 
         _buildBatchTransferRequiredData(
-            stateBeforeBatchTransferBob.assetIds,
-            stateBeforeBatchTransferBob.amounts,
-            depositAmount
+            stateBeforeBatchTransferBob.assetIds, stateBeforeBatchTransferBob.amounts, depositAmount
         );
 
         // Fetch previous balances
-        _fetchMultipleBalances(
-            stateBeforeBatchTransferBob.previousBalances,
-            users.bob
-        );
+        _fetchMultipleBalances(stateBeforeBatchTransferBob.previousBalances, users.bob);
 
-        _fetchMultipleBalances(
-            stateBeforeBatchTransferAlice.previousBalances,
-            users.alice
-        );
+        _fetchMultipleBalances(stateBeforeBatchTransferAlice.previousBalances, users.alice);
 
         // Owner becomes operator
         _resetPrank(users.owner);
@@ -334,26 +272,17 @@ contract batchTransfer is YieldBoxUnitConcreteTest {
 
         // Transfer assets
         yieldBox.batchTransfer(
-            users.alice,
-            users.bob,
-            stateBeforeBatchTransferBob.assetIds,
-            stateBeforeBatchTransferBob.amounts
+            users.alice, users.bob, stateBeforeBatchTransferBob.assetIds, stateBeforeBatchTransferBob.amounts
         );
 
         // it should increment `balanceOf` each assed ID by its respective `shares`
         _assertExpectedBalances(
-            stateBeforeBatchTransferBob.previousBalances,
-            users.bob,
-            stateBeforeBatchTransferBob.amounts,
-            true
+            stateBeforeBatchTransferBob.previousBalances, users.bob, stateBeforeBatchTransferBob.amounts, true
         );
 
         // it should decrement `balanceOf` `from` by the total accumulated `_totalShares`
         _assertExpectedBalances(
-            stateBeforeBatchTransferAlice.previousBalances,
-            users.alice,
-            stateBeforeBatchTransferBob.amounts,
-            false
+            stateBeforeBatchTransferAlice.previousBalances, users.alice, stateBeforeBatchTransferBob.amounts, false
         );
     }
 }

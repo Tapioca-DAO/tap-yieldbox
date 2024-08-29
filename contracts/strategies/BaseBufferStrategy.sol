@@ -45,12 +45,7 @@ abstract contract BaseBufferStrategy is IStrategy {
         return _reserve() + _balanceInvested();
     }
 
-    function cheapWithdrawable()
-        external
-        view
-        override
-        returns (uint256 amount)
-    {
+    function cheapWithdrawable() external view override returns (uint256 amount) {
         return _reserve();
     }
 
@@ -70,13 +65,7 @@ abstract contract BaseBufferStrategy is IStrategy {
 
         // Check if the reserve is too large, if so invest it
         if (reservePercent > MAX_RESERVE_PERCENT) {
-            _invest(
-                balance.muldiv(
-                    reservePercent - TARGET_RESERVE_PERCENT,
-                    100e18,
-                    false
-                )
-            );
+            _invest(balance.muldiv(reservePercent - TARGET_RESERVE_PERCENT, 100e18, false));
         }
     }
 
@@ -95,14 +84,7 @@ abstract contract BaseBufferStrategy is IStrategy {
                 _divestAll();
                 _transfer(to, _reserve());
             } else {
-                _divest(
-                    balance -
-                        (balance + reserve - amount).muldiv(
-                            TARGET_RESERVE_PERCENT,
-                            100e18,
-                            false
-                        )
-                );
+                _divest(balance - (balance + reserve - amount).muldiv(TARGET_RESERVE_PERCENT, 100e18, false));
                 _transfer(to, amount);
             }
         }
@@ -116,10 +98,7 @@ abstract contract BaseERC20BufferStrategy is BaseBufferStrategy {
     uint256 public constant tokenId = 0;
     address public immutable contractAddress;
 
-    constructor(
-        IYieldBox _yieldBox,
-        address _contractAddress
-    ) BaseBufferStrategy(_yieldBox) {
+    constructor(IYieldBox _yieldBox, address _contractAddress) BaseBufferStrategy(_yieldBox) {
         contractAddress = _contractAddress;
     }
 

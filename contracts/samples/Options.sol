@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
+
 import "../YieldBox.sol";
 
 // Thanks to
@@ -32,10 +33,7 @@ library String {
     bytes1 private constant DOT = bytes1(uint8(46));
     bytes1 private constant ZERO = bytes1(uint8(48));
 
-    function numToString(
-        uint256 number,
-        uint8 decimals
-    ) internal pure returns (string memory) {
+    function numToString(uint256 number, uint8 decimals) internal pure returns (string memory) {
         uint256 i;
         uint256 j;
         uint256 result;
@@ -49,9 +47,7 @@ library String {
                 result = result * 10 + (num % 10);
                 if (result > 0) {
                     b[j++] = bytes1(uint8((num % 10) + uint8(ZERO)));
-                    if (
-                        (j > 1) && (number == num * 10 ** i) && (i <= decimals)
-                    ) {
+                    if ((j > 1) && (number == num * 10 ** i) && (i <= decimals)) {
                         break;
                     }
                 } else {
@@ -96,12 +92,7 @@ contract YieldOptions {
 
     Option[] public options;
 
-    function create(
-        uint32 asset,
-        uint32 currency,
-        uint128 price,
-        uint32 expiry
-    ) public returns (uint256 optionId) {
+    function create(uint32 asset, uint32 currency, uint128 price, uint32 expiry) public returns (uint256 optionId) {
         Option memory option;
         option.asset = asset;
         option.currency = currency;
@@ -116,10 +107,7 @@ contract YieldOptions {
                     ":",
                     yieldBox.symbol(option.currency),
                     " ",
-                    String.numToString(
-                        option.price,
-                        yieldBox.decimals(option.currency)
-                    )
+                    String.numToString(option.price, yieldBox.decimals(option.currency))
                 )
             ),
             18,
@@ -134,10 +122,7 @@ contract YieldOptions {
                     ":",
                     yieldBox.symbol(option.currency),
                     " ",
-                    String.numToString(
-                        option.price,
-                        yieldBox.decimals(option.currency)
-                    )
+                    String.numToString(option.price, yieldBox.decimals(option.currency))
                 )
             ),
             18,
@@ -157,19 +142,11 @@ contract YieldOptions {
      * @dev Mint options.
      * @param amount The amount to mint expressed in units of currency.
      */
-    function mint(
-        uint256 optionId,
-        uint256 amount,
-        address optionTo,
-        address minterTo
-    ) public {
+    function mint(uint256 optionId, uint256 amount, address optionTo, address minterTo) public {
         Option storage option = options[optionId];
 
         require(block.timestamp < option.expiry, "Option expired");
-        require(
-            yieldBox.totalSupply(option.asset) == 0,
-            "Options exercised, no minting"
-        );
+        require(yieldBox.totalSupply(option.asset) == 0, "Options exercised, no minting");
 
         // Step 1. Receive amount base units of currency. This is held in the contract to be paid when the option is exercised.
         yieldBox.transfer(msg.sender, address(this), option.asset, amount);
@@ -199,15 +176,13 @@ contract YieldOptions {
             address(this),
             to,
             option.asset,
-            (yieldBox.totalSupply(option.currency) * amount) /
-                yieldBox.totalSupply(option.minterAssetId)
+            (yieldBox.totalSupply(option.currency) * amount) / yieldBox.totalSupply(option.minterAssetId)
         );
         yieldBox.transfer(
             address(this),
             to,
             option.asset,
-            (yieldBox.totalSupply(option.currency) * amount) /
-                yieldBox.totalSupply(option.minterAssetId)
+            (yieldBox.totalSupply(option.currency) * amount) / yieldBox.totalSupply(option.minterAssetId)
         );
         yieldBox.burn(option.minterAssetId, msg.sender, amount);
 
@@ -220,11 +195,7 @@ contract YieldOptions {
      * In this case Assets are withdrawn first if available. Only currency is returned if assets run to 0.
      * @param amount The amount to withdraw expressed in units of the option.
      */
-    function withdrawEarly(
-        uint256 optionId,
-        uint256 amount,
-        address to
-    ) public {
+    function withdrawEarly(uint256 optionId, uint256 amount, address to) public {
         Option storage option = options[optionId];
 
         // CHECKS
@@ -245,9 +216,7 @@ contract YieldOptions {
 
             // If there aren't enough Assets in the contract, use as much as possible and get the rest from currency
             if (assetAmount > totalAsset) {
-                currencyAmount =
-                    ((assetAmount - totalAsset) * option.price) /
-                    1e18;
+                currencyAmount = ((assetAmount - totalAsset) * option.price) / 1e18;
                 assetAmount = totalAsset;
             }
         } else {
@@ -271,12 +240,7 @@ contract YieldOptions {
         require(block.timestamp < option.expiry, "Option has expired");
 
         yieldBox.burn(option.optionAssetId, msg.sender, amount);
-        yieldBox.transfer(
-            msg.sender,
-            address(this),
-            option.asset,
-            (amount * 1e18) / option.price
-        );
+        yieldBox.transfer(msg.sender, address(this), option.asset, (amount * 1e18) / option.price);
         yieldBox.transfer(address(this), msg.sender, option.currency, amount);
 
         emit Exercise(optionId, msg.sender, amount);
@@ -294,12 +258,7 @@ contract YieldOptions {
         Option storage option = options[optionId];
 
         uint256 currencyAmount = (assetAmount * option.price) / 1e18;
-        yieldBox.transfer(
-            msg.sender,
-            address(this),
-            option.currency,
-            currencyAmount
-        ); // TODO: Round up
+        yieldBox.transfer(msg.sender, address(this), option.currency, currencyAmount); // TODO: Round up
         yieldBox.transfer(address(this), msg.sender, option.asset, assetAmount);
         yieldBox.mint(option.optionAssetId, to, currencyAmount);
 

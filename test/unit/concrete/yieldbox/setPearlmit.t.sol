@@ -14,7 +14,6 @@ import {Pearlmit} from "tap-utils/pearlmit/Pearlmit.sol";
 import "contracts/interfaces/IWrappedNative.sol";
 
 contract setPearlmit is YieldBoxUnitConcreteTest {
-
     /////////////////////////////////////////////////////////////////////
     //                          STORAGE                                //
     /////////////////////////////////////////////////////////////////////
@@ -45,10 +44,10 @@ contract setPearlmit is YieldBoxUnitConcreteTest {
     }
 
     /// @notice Tests the happy path where owner resets Pearlmit.
-    function test_setPearlmitWhen_CallerIsOwner() public  {
+    function test_setPearlmitWhen_CallerIsOwner() public {
         // Prank owner.
         _resetPrank(users.owner);
-        
+
         // Try to reset Pearlmit.
         vm.expectEmit();
         emit PearlmitUpdated(address(yieldBox.pearlmit()), newPearlmit);

@@ -15,7 +15,6 @@ import {IStrategy} from "contracts/interfaces/IStrategy.sol";
 import "contracts/interfaces/IWrappedNative.sol";
 
 contract transferMultiple is YieldBoxUnitConcreteTest {
-
     /////////////////////////////////////////////////////////////////////
     //                          STRUCTS                                //
     /////////////////////////////////////////////////////////////////////
@@ -28,11 +27,11 @@ contract transferMultiple is YieldBoxUnitConcreteTest {
     /////////////////////////////////////////////////////////////////////
     //                          INTERNAL HELPERS                       //
     /////////////////////////////////////////////////////////////////////
-    function _buildTransferMultipleRequiredData(
-        address[] memory tos,
-        uint256[] memory amounts,
-        uint256 amount
-    ) internal view returns (address[] memory, uint256[] memory) {
+    function _buildTransferMultipleRequiredData(address[] memory tos, uint256[] memory amounts, uint256 amount)
+        internal
+        view
+        returns (address[] memory, uint256[] memory)
+    {
         // Build array of `tos`
         tos[0] = users.bob;
         tos[1] = users.charlie;
@@ -46,41 +45,30 @@ contract transferMultiple is YieldBoxUnitConcreteTest {
         amounts[3] = amount / 4;
     }
 
-    function _assertExpectedBalances(
-        uint256[] memory previousBalances,
-        address[] memory tos,
-        uint256[] memory amounts
-    ) internal view returns (address[] memory, uint256[] memory) {
+    function _assertExpectedBalances(uint256[] memory previousBalances, address[] memory tos, uint256[] memory amounts)
+        internal
+        view
+        returns (address[] memory, uint256[] memory)
+    {
         for (uint256 i; i < tos.length; i++) {
-            assertEq(
-                yieldBox.balanceOf(tos[i], DAI_ASSET_ID),
-                previousBalances[i] + amounts[i]
-            );
+            assertEq(yieldBox.balanceOf(tos[i], DAI_ASSET_ID), previousBalances[i] + amounts[i]);
         }
     }
 
-    function _triggerMultipleExpectEmits(
-        address operator,
-        address from,
-        address[] memory tos,
-        uint256[] memory amounts
-    ) internal {
+    function _triggerMultipleExpectEmits(address operator, address from, address[] memory tos, uint256[] memory amounts)
+        internal
+    {
         for (uint256 i; i < tos.length; i++) {
             vm.expectEmit();
-            emit TransferSingle(
-                operator,
-                from,
-                tos[i],
-                DAI_ASSET_ID,
-                amounts[i]
-            );
+            emit TransferSingle(operator, from, tos[i], DAI_ASSET_ID, amounts[i]);
         }
     }
 
-    function _fetchMultipleBalances(
-        uint256[] memory previousBalances,
-        address[] memory tos
-    ) internal view returns (uint256[] memory) {
+    function _fetchMultipleBalances(uint256[] memory previousBalances, address[] memory tos)
+        internal
+        view
+        returns (uint256[] memory)
+    {
         for (uint256 i; i < 4; i++) {
             previousBalances[i] = yieldBox.balanceOf(tos[i], DAI_ASSET_ID);
         }
@@ -102,9 +90,7 @@ contract transferMultiple is YieldBoxUnitConcreteTest {
     ///     - `from` is different from `msg.sender`
     ///     - `from` has not approved `msg.sender` for the given asset ID
     ///     - `from` has not approved `msg.sender` for all assets
-    function test_transfeMultipleRevertWhen_CallerIsNotAllowed(
-        uint64 depositAmount
-    )
+    function test_transfeMultipleRevertWhen_CallerIsNotAllowed(uint64 depositAmount)
         public
         assumeGtE(depositAmount, 5)
         whenDeposited(DAI_ASSET_ID, users.alice, users.alice, 0, depositAmount)
@@ -120,18 +106,13 @@ contract transferMultiple is YieldBoxUnitConcreteTest {
 
         // Build required data
         _buildTransferMultipleRequiredData(
-            stateBeforeTransferMultiple.tos,
-            stateBeforeTransferMultiple.amounts,
-            depositAmount
+            stateBeforeTransferMultiple.tos, stateBeforeTransferMultiple.amounts, depositAmount
         );
 
         // Try to transfer assets on behalf of impartial user
         vm.expectRevert("Transfer not allowed");
         yieldBox.transferMultiple(
-            users.alice,
-            stateBeforeTransferMultiple.tos,
-            DAI_ASSET_ID,
-            stateBeforeTransferMultiple.amounts
+            users.alice, stateBeforeTransferMultiple.tos, DAI_ASSET_ID, stateBeforeTransferMultiple.amounts
         );
     }
 
@@ -140,9 +121,10 @@ contract transferMultiple is YieldBoxUnitConcreteTest {
     ///     - `from` is different from `msg.sender`
     ///     - `from` has not approved `msg.sender` for the given asset ID
     ///     - `from` has not approved `msg.sender` for all assets
-    function test_transfeMultipleRevertWhen__AssetIsNotRegistered(
-        uint64 depositAmount
-    ) public assumeGtE(depositAmount, 5) {
+    function test_transfeMultipleRevertWhen__AssetIsNotRegistered(uint64 depositAmount)
+        public
+        assumeGtE(depositAmount, 5)
+    {
         StateBeforeTransferMultiple memory stateBeforeTransferMultiple;
 
         // Fill required data
@@ -151,9 +133,7 @@ contract transferMultiple is YieldBoxUnitConcreteTest {
 
         // Build required data
         _buildTransferMultipleRequiredData(
-            stateBeforeTransferMultiple.tos,
-            stateBeforeTransferMultiple.amounts,
-            depositAmount
+            stateBeforeTransferMultiple.tos, stateBeforeTransferMultiple.amounts, depositAmount
         );
         // Try to transfer asset not registered in YieldBox.
         vm.expectRevert();
@@ -166,10 +146,10 @@ contract transferMultiple is YieldBoxUnitConcreteTest {
     }
 
     /// @notice Tests the scenario where any of `tos` is address(0)
-    function test_transfeMultipleRevertWhen__AssetIsNotRegistered(
-        uint64 depositAmount,
-        uint8 rand
-    ) public assumeGtE(depositAmount, 5) {
+    function test_transfeMultipleRevertWhen__AssetIsNotRegistered(uint64 depositAmount, uint8 rand)
+        public
+        assumeGtE(depositAmount, 5)
+    {
         StateBeforeTransferMultiple memory stateBeforeTransferMultiple;
 
         // Fill required data
@@ -178,9 +158,7 @@ contract transferMultiple is YieldBoxUnitConcreteTest {
 
         // Build required data
         _buildTransferMultipleRequiredData(
-            stateBeforeTransferMultiple.tos,
-            stateBeforeTransferMultiple.amounts,
-            depositAmount
+            stateBeforeTransferMultiple.tos, stateBeforeTransferMultiple.amounts, depositAmount
         );
 
         // Set one of `tos` to address(0)
@@ -197,10 +175,10 @@ contract transferMultiple is YieldBoxUnitConcreteTest {
     }
 
     /// @notice Tests the scenario where `_totalShares` is bigger than `balanceOf` `from`
-    function test_transfeMultipleRevertWhen__AmountIsBiggerThanBalanceOfFrom(
-        uint64 depositAmount,
-        uint8 rand
-    ) public assumeGtE(depositAmount, 5) {
+    function test_transfeMultipleRevertWhen__AmountIsBiggerThanBalanceOfFrom(uint64 depositAmount, uint8 rand)
+        public
+        assumeGtE(depositAmount, 5)
+    {
         StateBeforeTransferMultiple memory stateBeforeTransferMultiple;
 
         // Fill required data
@@ -209,15 +187,11 @@ contract transferMultiple is YieldBoxUnitConcreteTest {
 
         // Build required data
         _buildTransferMultipleRequiredData(
-            stateBeforeTransferMultiple.tos,
-            stateBeforeTransferMultiple.amounts,
-            depositAmount
+            stateBeforeTransferMultiple.tos, stateBeforeTransferMultiple.amounts, depositAmount
         );
 
         // Inflate amounts
-        stateBeforeTransferMultiple.amounts[rand % 4] =
-            stateBeforeTransferMultiple.amounts[rand % 4] *
-            5;
+        stateBeforeTransferMultiple.amounts[rand % 4] = stateBeforeTransferMultiple.amounts[rand % 4] * 5;
 
         // Try to transfer asset not registered in YieldBox.
         vm.expectRevert();
@@ -230,9 +204,7 @@ contract transferMultiple is YieldBoxUnitConcreteTest {
     }
 
     /// @notice Tests the scenario where `_totalShares` is bigger than `balanceOf` `from`
-    function test_transferMultipleWhen_ValueIsSmallerOrEqualToBalance(
-        uint64 depositAmount
-    )
+    function test_transferMultipleWhen_ValueIsSmallerOrEqualToBalance(uint64 depositAmount)
         public
         assumeGtE(depositAmount, 5)
         whenDeposited(DAI_ASSET_ID, users.alice, users.alice, 0, depositAmount)
@@ -246,21 +218,13 @@ contract transferMultiple is YieldBoxUnitConcreteTest {
 
         // Build required data
         _buildTransferMultipleRequiredData(
-            stateBeforeTransferMultiple.tos,
-            stateBeforeTransferMultiple.amounts,
-            depositAmount
+            stateBeforeTransferMultiple.tos, stateBeforeTransferMultiple.amounts, depositAmount
         );
 
         // Fetch previous state
-        _fetchMultipleBalances(
-            stateBeforeTransferMultiple.previousBalances,
-            stateBeforeTransferMultiple.tos
-        );
+        _fetchMultipleBalances(stateBeforeTransferMultiple.previousBalances, stateBeforeTransferMultiple.tos);
 
-        uint256 aliceBalanceBefore = yieldBox.balanceOf(
-            users.alice,
-            DAI_ASSET_ID
-        );
+        uint256 aliceBalanceBefore = yieldBox.balanceOf(users.alice, DAI_ASSET_ID);
 
         // it should emit a `TransferSingle` event for each iteration
         _triggerMultipleExpectEmits({
@@ -293,9 +257,7 @@ contract transferMultiple is YieldBoxUnitConcreteTest {
     }
 
     /// @notice Tests the scenario where `_totalShares` is bigger than `balanceOf` `from` via asset ID approval.
-    function test_transferMultipleWhen_ValueIsSmallerOrEqualToBalanceViaApprovedForAssetID(
-        uint64 depositAmount
-    )
+    function test_transferMultipleWhen_ValueIsSmallerOrEqualToBalanceViaApprovedForAssetID(uint64 depositAmount)
         public
         assumeGtE(depositAmount, 5)
         whenDeposited(DAI_ASSET_ID, users.alice, users.alice, 0, depositAmount)
@@ -310,21 +272,13 @@ contract transferMultiple is YieldBoxUnitConcreteTest {
 
         // Build required data
         _buildTransferMultipleRequiredData(
-            stateBeforeTransferMultiple.tos,
-            stateBeforeTransferMultiple.amounts,
-            depositAmount
+            stateBeforeTransferMultiple.tos, stateBeforeTransferMultiple.amounts, depositAmount
         );
 
         // Fetch previous state
-        _fetchMultipleBalances(
-            stateBeforeTransferMultiple.previousBalances,
-            stateBeforeTransferMultiple.tos
-        );
+        _fetchMultipleBalances(stateBeforeTransferMultiple.previousBalances, stateBeforeTransferMultiple.tos);
 
-        uint256 aliceBalanceBefore = yieldBox.balanceOf(
-            users.alice,
-            DAI_ASSET_ID
-        );
+        uint256 aliceBalanceBefore = yieldBox.balanceOf(users.alice, DAI_ASSET_ID);
 
         // Owner becomes operator
         _resetPrank(users.owner);
@@ -360,9 +314,7 @@ contract transferMultiple is YieldBoxUnitConcreteTest {
     }
 
     /// @notice Tests the scenario where `_totalShares` is bigger than `balanceOf` `from` via approval for all.
-    function test_transferMultipleWhen_ValueIsSmallerOrEqualToBalanceViaApprovedForAll(
-        uint64 depositAmount
-    )
+    function test_transferMultipleWhen_ValueIsSmallerOrEqualToBalanceViaApprovedForAll(uint64 depositAmount)
         public
         assumeGtE(depositAmount, 5)
         whenDeposited(DAI_ASSET_ID, users.alice, users.alice, 0, depositAmount)
@@ -377,21 +329,13 @@ contract transferMultiple is YieldBoxUnitConcreteTest {
 
         // Build required data
         _buildTransferMultipleRequiredData(
-            stateBeforeTransferMultiple.tos,
-            stateBeforeTransferMultiple.amounts,
-            depositAmount
+            stateBeforeTransferMultiple.tos, stateBeforeTransferMultiple.amounts, depositAmount
         );
 
         // Fetch previous state
-        _fetchMultipleBalances(
-            stateBeforeTransferMultiple.previousBalances,
-            stateBeforeTransferMultiple.tos
-        );
+        _fetchMultipleBalances(stateBeforeTransferMultiple.previousBalances, stateBeforeTransferMultiple.tos);
 
-        uint256 aliceBalanceBefore = yieldBox.balanceOf(
-            users.alice,
-            DAI_ASSET_ID
-        );
+        uint256 aliceBalanceBefore = yieldBox.balanceOf(users.alice, DAI_ASSET_ID);
 
         // Owner becomes operator
         _resetPrank(users.owner);
@@ -424,7 +368,5 @@ contract transferMultiple is YieldBoxUnitConcreteTest {
             yieldBox.balanceOf(users.alice, DAI_ASSET_ID),
             aliceBalanceBefore - stateBeforeTransferMultiple.amounts[0] * 4 // all transferred amounts are equal
         );
-
-        
     }
 }

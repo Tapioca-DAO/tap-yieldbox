@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.9;
 pragma experimental ABIEncoderV2;
+
 import "@boringcrypto/boring-solidity/contracts/BoringOwnable.sol";
 import "@boringcrypto/boring-solidity/contracts/ERC20.sol";
 import "@boringcrypto/boring-solidity/contracts/interfaces/IMasterContract.sol";
@@ -58,46 +59,14 @@ contract LendingPair is IMasterContract {
 
     event LogExchangeRate(uint256 rate);
     event LogAccrue(uint256 accruedAmount, uint64 rate, uint256 utilization);
-    event LogAddCollateral(
-        address indexed from,
-        address indexed to,
-        uint256 share
-    );
-    event LogAddAsset(
-        address indexed from,
-        address indexed to,
-        uint256 share,
-        uint256 fraction
-    );
-    event LogRemoveCollateral(
-        address indexed from,
-        address indexed to,
-        uint256 share
-    );
-    event LogRemoveAsset(
-        address indexed from,
-        address indexed to,
-        uint256 share,
-        uint256 fraction
-    );
-    event LogBorrow(
-        address indexed from,
-        address indexed to,
-        uint256 amount,
-        uint256 part
-    );
-    event LogRepay(
-        address indexed from,
-        address indexed to,
-        uint256 amount,
-        uint256 part
-    );
+    event LogAddCollateral(address indexed from, address indexed to, uint256 share);
+    event LogAddAsset(address indexed from, address indexed to, uint256 share, uint256 fraction);
+    event LogRemoveCollateral(address indexed from, address indexed to, uint256 share);
+    event LogRemoveAsset(address indexed from, address indexed to, uint256 share, uint256 fraction);
+    event LogBorrow(address indexed from, address indexed to, uint256 amount, uint256 part);
+    event LogRepay(address indexed from, address indexed to, uint256 amount, uint256 part);
     event LogLiquidate(
-        uint256 indexed marketId,
-        address indexed user,
-        uint256 borrowPart,
-        address to,
-        ISwapper swapper
+        uint256 indexed marketId, address indexed user, uint256 borrowPart, address to, ISwapper swapper
     );
 
     // Immutables (for MasterContract and all clones)
@@ -114,8 +83,7 @@ contract LendingPair is IMasterContract {
     uint256 private constant MAXIMUM_TARGET_UTILIZATION = 8e17; // 80%
     uint256 private constant UTILIZATION_PRECISION = 1e18;
     uint256 private constant FULL_UTILIZATION = 1e18;
-    uint256 private constant FULL_UTILIZATION_MINUS_MAX =
-        FULL_UTILIZATION - MAXIMUM_TARGET_UTILIZATION;
+    uint256 private constant FULL_UTILIZATION_MINUS_MAX = FULL_UTILIZATION - MAXIMUM_TARGET_UTILIZATION;
     uint256 private constant FACTOR_PRECISION = 1e18;
 
     uint64 private constant STARTING_INTEREST_PER_SECOND = 317097920; // approx 1% APR
@@ -139,29 +107,14 @@ contract LendingPair is IMasterContract {
         revert("No clones");
     }
 
-    function createMarket(
-        uint32 collateral_,
-        uint32 asset_,
-        IOracle oracle_,
-        bytes calldata oracleData_
-    ) public {
+    function createMarket(uint32 collateral_, uint32 asset_, IOracle oracle_, bytes calldata oracleData_) public {
         uint32 marketId = yieldBox.createToken(
             string(
-                abi.encodePacked(
-                    yieldBox.name(collateral_),
-                    "/",
-                    yieldBox.name(asset_),
-                    "-",
-                    oracle_.name(oracleData_)
-                )
+                abi.encodePacked(yieldBox.name(collateral_), "/", yieldBox.name(asset_), "-", oracle_.name(oracleData_))
             ),
             string(
                 abi.encodePacked(
-                    yieldBox.symbol(collateral_),
-                    "/",
-                    yieldBox.symbol(asset_),
-                    "-",
-                    oracle_.symbol(oracleData_)
+                    yieldBox.symbol(collateral_), "/", yieldBox.symbol(asset_), "-", oracle_.symbol(oracleData_)
                 )
             ),
             18,
@@ -169,12 +122,8 @@ contract LendingPair is IMasterContract {
         );
 
         Market storage market = markets[marketId];
-        (market.collateral, market.asset, market.oracle, market.oracleData) = (
-            collateral_,
-            asset_,
-            oracle_,
-            oracleData_
-        );
+        (market.collateral, market.asset, market.oracle, market.oracleData) =
+            (collateral_, asset_, oracle_, oracleData_);
         market.interestPerSecond = STARTING_INTEREST_PER_SECOND; // 1% APR, with 1e18 being 100%
         market.assetId = marketId;
 
@@ -204,39 +153,27 @@ contract LendingPair is IMasterContract {
         uint256 extraAmount = 0;
 
         // Accrue interest
-        extraAmount =
-            (market.totalBorrow.elastic *
-                market.interestPerSecond *
-                elapsedTime) /
-            1e18;
+        extraAmount = (market.totalBorrow.elastic * market.interestPerSecond * elapsedTime) / 1e18;
         market.totalBorrow.elastic += extraAmount.to128();
-        uint256 fullAssetAmount = yieldBox.toAmount(
-            market.asset,
-            yieldBox.totalSupply(marketId),
-            false
-        ) + market.totalBorrow.elastic;
+        uint256 fullAssetAmount =
+            yieldBox.toAmount(market.asset, yieldBox.totalSupply(marketId), false) + market.totalBorrow.elastic;
 
         // Update interest rate
-        uint256 utilization = (market.totalBorrow.elastic *
-            UTILIZATION_PRECISION) / fullAssetAmount;
+        uint256 utilization = (market.totalBorrow.elastic * UTILIZATION_PRECISION) / fullAssetAmount;
         if (utilization < MINIMUM_TARGET_UTILIZATION) {
-            uint256 underFactor = ((MINIMUM_TARGET_UTILIZATION - utilization) *
-                FACTOR_PRECISION) / MINIMUM_TARGET_UTILIZATION;
-            uint256 scale = INTEREST_ELASTICITY +
-                (underFactor * underFactor * elapsedTime);
-            market.interestPerSecond = ((market.interestPerSecond *
-                INTEREST_ELASTICITY) / scale).to64();
+            uint256 underFactor =
+                ((MINIMUM_TARGET_UTILIZATION - utilization) * FACTOR_PRECISION) / MINIMUM_TARGET_UTILIZATION;
+            uint256 scale = INTEREST_ELASTICITY + (underFactor * underFactor * elapsedTime);
+            market.interestPerSecond = ((market.interestPerSecond * INTEREST_ELASTICITY) / scale).to64();
 
             if (market.interestPerSecond < MINIMUM_INTEREST_PER_SECOND) {
                 market.interestPerSecond = MINIMUM_INTEREST_PER_SECOND; // 0.25% APR minimum
             }
         } else if (utilization > MAXIMUM_TARGET_UTILIZATION) {
-            uint256 overFactor = ((utilization - MAXIMUM_TARGET_UTILIZATION) *
-                FACTOR_PRECISION) / FULL_UTILIZATION_MINUS_MAX;
-            uint256 scale = INTEREST_ELASTICITY +
-                (overFactor * overFactor * elapsedTime);
-            uint256 newInterestPerSecond = (market.interestPerSecond * scale) /
-                INTEREST_ELASTICITY;
+            uint256 overFactor =
+                ((utilization - MAXIMUM_TARGET_UTILIZATION) * FACTOR_PRECISION) / FULL_UTILIZATION_MINUS_MAX;
+            uint256 scale = INTEREST_ELASTICITY + (overFactor * overFactor * elapsedTime);
+            uint256 newInterestPerSecond = (market.interestPerSecond * scale) / INTEREST_ELASTICITY;
             if (newInterestPerSecond > MAXIMUM_INTEREST_PER_SECOND) {
                 newInterestPerSecond = MAXIMUM_INTEREST_PER_SECOND; // 1000% APR maximum
             }
@@ -248,11 +185,7 @@ contract LendingPair is IMasterContract {
 
     /// @notice Concrete implementation of `isSolvent`. Includes a third parameter to allow caching `exchangeRate`.
     /// @param _exchangeRate The exchange rate. Used to cache the `exchangeRate` between calls.
-    function _isSolvent(
-        uint256 marketId,
-        address user,
-        uint256 _exchangeRate
-    ) internal view returns (bool) {
+    function _isSolvent(uint256 marketId, address user, uint256 _exchangeRate) internal view returns (bool) {
         Market storage market = markets[marketId];
 
         // accrue must have already been called!
@@ -261,16 +194,13 @@ contract LendingPair is IMasterContract {
         uint256 collateralShare = market.userCollateralShare[user];
         if (collateralShare == 0) return false;
 
-        return
-            yieldBox.toAmount(
-                market.collateral,
-                ((collateralShare * EXCHANGE_RATE_PRECISION) /
-                    COLLATERIZATION_RATE_PRECISION) * COLLATERIZATION_RATE,
-                false
-            ) >=
-            // Moved exchangeRate here instead of dividing the other side to preserve more precision
-            (borrowPart * market.totalBorrow.elastic * _exchangeRate) /
-                market.totalBorrow.base;
+        return yieldBox.toAmount(
+            market.collateral,
+            ((collateralShare * EXCHANGE_RATE_PRECISION) / COLLATERIZATION_RATE_PRECISION) * COLLATERIZATION_RATE,
+            false
+        )
+        // Moved exchangeRate here instead of dividing the other side to preserve more precision
+        >= (borrowPart * market.totalBorrow.elastic * _exchangeRate) / market.totalBorrow.base;
     }
 
     modifier solvent(uint256 marketId) {
@@ -282,9 +212,7 @@ contract LendingPair is IMasterContract {
     /// This function is supposed to be invoked if needed because Oracle queries can be expensive.
     /// @return updated True if `exchangeRate` was updated.
     /// @return rate The new exchange rate.
-    function updateExchangeRate(
-        uint256 marketId
-    ) public returns (bool updated, uint256 rate) {
+    function updateExchangeRate(uint256 marketId) public returns (bool updated, uint256 rate) {
         Market storage market = markets[marketId];
 
         (updated, rate) = market.oracle.get(market.oracleData);
@@ -312,11 +240,7 @@ contract LendingPair is IMasterContract {
     }
 
     /// @dev Concrete implementation of `removeCollateral`.
-    function _removeCollateral(
-        uint256 marketId,
-        address to,
-        uint256 share
-    ) internal {
+    function _removeCollateral(uint256 marketId, address to, uint256 share) internal {
         Market storage market = markets[marketId];
 
         market.userCollateralShare[msg.sender] -= share;
@@ -328,29 +252,19 @@ contract LendingPair is IMasterContract {
     /// @notice Removes `share` amount of collateral and transfers it to `to`.
     /// @param to The receiver of the shares.
     /// @param share Amount of shares to remove.
-    function removeCollateral(
-        uint256 marketId,
-        address to,
-        uint256 share
-    ) public solvent(marketId) {
+    function removeCollateral(uint256 marketId, address to, uint256 share) public solvent(marketId) {
         // accrue must be called because we check solvency
         accrue(marketId);
         _removeCollateral(marketId, to, share);
     }
 
     /// @dev Concrete implementation of `addAsset`.
-    function _addAsset(
-        uint256 marketId,
-        address to,
-        uint256 share
-    ) internal returns (uint256 fraction) {
+    function _addAsset(uint256 marketId, address to, uint256 share) internal returns (uint256 fraction) {
         Market storage market = markets[marketId];
 
-        uint256 allShare = yieldBox.totalSupply(marketId) +
-            yieldBox.toShare(market.asset, market.totalBorrow.elastic, true);
-        fraction = allShare == 0
-            ? share
-            : (share * yieldBox.totalSupply(marketId)) / allShare;
+        uint256 allShare =
+            yieldBox.totalSupply(marketId) + yieldBox.toShare(market.asset, market.totalBorrow.elastic, true);
+        fraction = allShare == 0 ? share : (share * yieldBox.totalSupply(marketId)) / allShare;
         if (yieldBox.totalSupply(marketId) + fraction < 1000) {
             return 0;
         }
@@ -363,25 +277,17 @@ contract LendingPair is IMasterContract {
     /// @param to The address of the user to receive the assets.
     /// @param share The amount of shares to add.
     /// @return fraction Total fractions added.
-    function addAsset(
-        uint256 marketId,
-        address to,
-        uint256 share
-    ) public returns (uint256 fraction) {
+    function addAsset(uint256 marketId, address to, uint256 share) public returns (uint256 fraction) {
         accrue(marketId);
         fraction = _addAsset(marketId, to, share);
     }
 
     /// @dev Concrete implementation of `removeAsset`.
-    function _removeAsset(
-        uint256 marketId,
-        address to,
-        uint256 fraction
-    ) internal returns (uint256 share) {
+    function _removeAsset(uint256 marketId, address to, uint256 fraction) internal returns (uint256 share) {
         Market storage market = markets[marketId];
 
-        uint256 allShare = yieldBox.totalSupply(marketId) +
-            yieldBox.toShare(market.asset, market.totalBorrow.elastic, true);
+        uint256 allShare =
+            yieldBox.totalSupply(marketId) + yieldBox.toShare(market.asset, market.totalBorrow.elastic, true);
         share = (fraction * allShare) / yieldBox.totalSupply(marketId);
         yieldBox.burn(marketId, msg.sender, fraction);
         require(yieldBox.totalSupply(marketId) >= 1000, "Kashi: below minimum");
@@ -393,21 +299,13 @@ contract LendingPair is IMasterContract {
     /// @param to The user that receives the removed assets.
     /// @param fraction The amount/fraction of assets held to remove.
     /// @return share The amount of shares transferred to `to`.
-    function removeAsset(
-        uint256 marketId,
-        address to,
-        uint256 fraction
-    ) public returns (uint256 share) {
+    function removeAsset(uint256 marketId, address to, uint256 fraction) public returns (uint256 share) {
         accrue(marketId);
         share = _removeAsset(marketId, to, fraction);
     }
 
     /// @dev Concrete implementation of `borrow`.
-    function _borrow(
-        uint256 marketId,
-        address to,
-        uint256 amount
-    ) internal returns (uint256 part, uint256 share) {
+    function _borrow(uint256 marketId, address to, uint256 amount) internal returns (uint256 part, uint256 share) {
         Market storage market = markets[marketId];
 
         (market.totalBorrow, part) = market.totalBorrow.add(amount, true);
@@ -423,22 +321,18 @@ contract LendingPair is IMasterContract {
     /// @notice Sender borrows `amount` and transfers it to `to`.
     /// @return part Total part of the debt held by borrowers.
     /// @return share Total amount in shares borrowed.
-    function borrow(
-        uint256 marketId,
-        address to,
-        uint256 amount
-    ) public solvent(marketId) returns (uint256 part, uint256 share) {
+    function borrow(uint256 marketId, address to, uint256 amount)
+        public
+        solvent(marketId)
+        returns (uint256 part, uint256 share)
+    {
         updateExchangeRate(marketId);
         accrue(marketId);
         (part, share) = _borrow(marketId, to, amount);
     }
 
     /// @dev Concrete implementation of `repay`.
-    function _repay(
-        uint256 marketId,
-        address to,
-        uint256 part
-    ) internal returns (uint256 amount) {
+    function _repay(uint256 marketId, address to, uint256 part) internal returns (uint256 amount) {
         Market storage market = markets[marketId];
 
         (market.totalBorrow, amount) = market.totalBorrow.sub(part, true);
@@ -454,11 +348,7 @@ contract LendingPair is IMasterContract {
     /// @param to Address of the user this payment should go.
     /// @param part The amount to repay. See `userBorrowPart`.
     /// @return amount The total amount repayed.
-    function repay(
-        uint256 marketId,
-        address to,
-        uint256 part
-    ) public returns (uint256 amount) {
+    function repay(uint256 marketId, address to, uint256 part) public returns (uint256 amount) {
         accrue(marketId);
         amount = _repay(marketId, to, part);
     }
@@ -468,74 +358,41 @@ contract LendingPair is IMasterContract {
     /// @param maxBorrowPart Maximum (partial) borrow amounts to liquidate.
     /// @param to Address of the receiver if `swapper` is zero.
     /// @param swapper Contract address of the `ISwapper` implementation.
-    function liquidate(
-        uint256 marketId,
-        address user,
-        uint256 maxBorrowPart,
-        address to,
-        ISwapper swapper
-    ) public {
+    function liquidate(uint256 marketId, address user, uint256 maxBorrowPart, address to, ISwapper swapper) public {
         Market storage market = markets[marketId];
 
         // Oracle can fail but we still need to allow liquidations
         (, uint256 _exchangeRate) = updateExchangeRate(marketId);
         accrue(marketId);
-        require(
-            !_isSolvent(marketId, user, _exchangeRate),
-            "Lending: user solvent"
-        );
+        require(!_isSolvent(marketId, user, _exchangeRate), "Lending: user solvent");
 
         uint256 availableBorrowPart = market.userBorrowPart[user];
-        uint256 borrowPart = maxBorrowPart > availableBorrowPart
-            ? availableBorrowPart
-            : maxBorrowPart;
+        uint256 borrowPart = maxBorrowPart > availableBorrowPart ? availableBorrowPart : maxBorrowPart;
         market.userBorrowPart[user] = availableBorrowPart - borrowPart;
         uint256 borrowAmount = market.totalBorrow.toElastic(borrowPart, false);
         uint256 collateralShare = yieldBox.toShare(
             market.collateral,
-            ((borrowAmount * LIQUIDATION_MULTIPLIER * _exchangeRate) /
-                LIQUIDATION_MULTIPLIER_PRECISION) * EXCHANGE_RATE_PRECISION,
+            ((borrowAmount * LIQUIDATION_MULTIPLIER * _exchangeRate) / LIQUIDATION_MULTIPLIER_PRECISION)
+                * EXCHANGE_RATE_PRECISION,
             false
         );
 
         market.userCollateralShare[user] -= collateralShare;
-        emit LogRemoveCollateral(
-            user,
-            swapper == ISwapper(address(0)) ? to : address(swapper),
-            collateralShare
-        );
-        emit LogRepay(
-            swapper == ISwapper(address(0)) ? msg.sender : address(swapper),
-            user,
-            borrowAmount,
-            borrowPart
-        );
+        emit LogRemoveCollateral(user, swapper == ISwapper(address(0)) ? to : address(swapper), collateralShare);
+        emit LogRepay(swapper == ISwapper(address(0)) ? msg.sender : address(swapper), user, borrowAmount, borrowPart);
 
         market.totalBorrow.elastic -= borrowAmount.to128();
         market.totalBorrow.base -= borrowPart.to128();
         market.totalCollateralShare -= collateralShare;
 
-        uint256 borrowShare = yieldBox.toShare(
-            market.asset,
-            borrowAmount,
-            true
-        );
+        uint256 borrowShare = yieldBox.toShare(market.asset, borrowAmount, true);
 
         // Flash liquidation: get proceeds first and provide the borrow after
         yieldBox.transfer(
-            address(this),
-            swapper == ISwapper(address(0)) ? to : address(swapper),
-            market.collateral,
-            collateralShare
+            address(this), swapper == ISwapper(address(0)) ? to : address(swapper), market.collateral, collateralShare
         );
         if (swapper != ISwapper(address(0))) {
-            swapper.swap(
-                market.collateral,
-                market.asset,
-                msg.sender,
-                borrowShare,
-                collateralShare
-            );
+            swapper.swap(market.collateral, market.asset, msg.sender, borrowShare, collateralShare);
         }
 
         yieldBox.transfer(msg.sender, address(this), market.asset, borrowShare);

@@ -35,7 +35,7 @@ contract withdraw is YieldBoxUnitConcreteTest {
     /////////////////////////////////////////////////////////////////////
     function setUp() public override {
         super.setUp();
-    } 
+    }
 
     /////////////////////////////////////////////////////////////////////
     //                         TESTS                                   //
@@ -46,9 +46,7 @@ contract withdraw is YieldBoxUnitConcreteTest {
     ///     - `from` is different from `msg.sender`
     ///     - `from` has not approved `msg.sender` for the given asset ID
     ///     - `from` has not approved `msg.sender` for all assets
-    function test_withdrawRevertWhen_CallerIsNotAllowed(
-        uint64 withdrawAmount
-    )
+    function test_withdrawRevertWhen_CallerIsNotAllowed(uint64 withdrawAmount)
         public
         assumeNoZeroValue(withdrawAmount)
         whenDeposited(DAI_ASSET_ID, users.alice, users.alice, 0, withdrawAmount)
@@ -68,9 +66,7 @@ contract withdraw is YieldBoxUnitConcreteTest {
     }
 
     /// @notice Tests the scenario where `asset` to withdraw is native
-    function test_withdrawRevertWhen_AssetIsNative(
-        uint64 withdrawAmount
-    )
+    function test_withdrawRevertWhen_AssetIsNative(uint64 withdrawAmount)
         public
         assumeNoZeroValue(withdrawAmount)
         whenDeposited(DAI_ASSET_ID, users.alice, users.alice, 0, withdrawAmount)
@@ -90,15 +86,11 @@ contract withdraw is YieldBoxUnitConcreteTest {
     }
 
     /// @notice Tests the scenario where shares are properly computed given a certain amount.
-    function test_withdraw_SharesAreCorrectGivenAmount(
-        uint64 depositAmount,
-        uint64 withdrawAmount
-    )
+    function test_withdraw_SharesAreCorrectGivenAmount(uint64 depositAmount, uint64 withdrawAmount)
         public
         assumeNoZeroValue(depositAmount)
         assumeNoZeroValue(withdrawAmount)
         whenDeposited(DAI_ASSET_ID, users.alice, users.alice, withdrawAmount, 0)
-
     {
         // Bound withdrawal amount to the max amount deposited
         vm.assume(withdrawAmount <= depositAmount);
@@ -106,9 +98,7 @@ contract withdraw is YieldBoxUnitConcreteTest {
         // Fetch data prior to withdrawing
         StateBeforeWithdrawal memory stateBeforeWithdrawal;
 
-        (stateBeforeWithdrawal.totalShare, stateBeforeWithdrawal.totalAmount) = yieldBox.assetTotals(
-            DAI_ASSET_ID
-        );
+        (stateBeforeWithdrawal.totalShare, stateBeforeWithdrawal.totalAmount) = yieldBox.assetTotals(DAI_ASSET_ID);
 
         // Compute expected shares to withdraw (rounding up for withdrawals)
         stateBeforeWithdrawal.expectedShares = YieldBoxRebase._toShares({
@@ -118,28 +108,18 @@ contract withdraw is YieldBoxUnitConcreteTest {
             roundUp: true
         });
 
-        
         // Fetch impartial user's share balance
-        stateBeforeWithdrawal.userShareBalanceBeforeWithdrawal = yieldBox
-            .balanceOf(users.alice, DAI_ASSET_ID);
+        stateBeforeWithdrawal.userShareBalanceBeforeWithdrawal = yieldBox.balanceOf(users.alice, DAI_ASSET_ID);
 
         // Fetch total supply
-        stateBeforeWithdrawal.totalSupplyBeforeWithdrawal = yieldBox
-            .totalSupply(DAI_ASSET_ID);
+        stateBeforeWithdrawal.totalSupplyBeforeWithdrawal = yieldBox.totalSupply(DAI_ASSET_ID);
 
         // Fetch strategy asset balance
-        stateBeforeWithdrawal.strategyAssetBalanceBeforeWithdrawal = dai
-            .balanceOf(address(daiStrategy));
+        stateBeforeWithdrawal.strategyAssetBalanceBeforeWithdrawal = dai.balanceOf(address(daiStrategy));
 
         // It should emit a `TransferSingle` event
         vm.expectEmit();
-        emit TransferSingle(
-            users.alice,
-            users.alice,
-            address(0),
-            DAI_ASSET_ID,
-            stateBeforeWithdrawal.expectedShares
-        );
+        emit TransferSingle(users.alice, users.alice, address(0), DAI_ASSET_ID, stateBeforeWithdrawal.expectedShares);
 
         vm.expectEmit();
         emit Withdraw(
@@ -165,8 +145,7 @@ contract withdraw is YieldBoxUnitConcreteTest {
         // It should decrement `balanceOf` of `to` by `share`
         assertEq(
             stateBeforeWithdrawal.userShareBalanceBeforeWithdrawal,
-            yieldBox.balanceOf(users.alice, DAI_ASSET_ID) +
-                stateBeforeWithdrawal.expectedShares
+            yieldBox.balanceOf(users.alice, DAI_ASSET_ID) + stateBeforeWithdrawal.expectedShares
         );
 
         // It should decrement `totalSupply` by `share`
@@ -185,20 +164,16 @@ contract withdraw is YieldBoxUnitConcreteTest {
     /// @notice Tests the scenario where shares are properly computed given a certain amount managed via an operator for a given asset ID.
     /// @dev Precondition: Alice has deposited assets.
     /// @dev Precondition: Alice has approved Bob for asset ID
-    function test_withdraw_SharesAreCorrectGivenAmountViaApprovedAssetID(
-    )
+    function test_withdraw_SharesAreCorrectGivenAmountViaApprovedAssetID()
         public
         whenYieldBoxApprovedForAssetID(users.alice, users.bob, DAI_ASSET_ID)
         whenDeposited(DAI_ASSET_ID, users.alice, users.alice, LARGE_AMOUNT, 0)
         resetPrank(users.bob)
     {
-
         // Fetch data prior to withdrawing
         StateBeforeWithdrawal memory stateBeforeWithdrawal;
 
-        (stateBeforeWithdrawal.totalShare, stateBeforeWithdrawal.totalAmount) = yieldBox.assetTotals(
-            DAI_ASSET_ID
-        );
+        (stateBeforeWithdrawal.totalShare, stateBeforeWithdrawal.totalAmount) = yieldBox.assetTotals(DAI_ASSET_ID);
 
         // Compute expected shares to withdraw (rounding up for withdrawals)
         stateBeforeWithdrawal.expectedShares = YieldBoxRebase._toShares({
@@ -208,39 +183,22 @@ contract withdraw is YieldBoxUnitConcreteTest {
             roundUp: true
         });
 
-        
         // Fetch impartial user's share balance
-        stateBeforeWithdrawal.userShareBalanceBeforeWithdrawal = yieldBox
-            .balanceOf(users.alice, DAI_ASSET_ID);
+        stateBeforeWithdrawal.userShareBalanceBeforeWithdrawal = yieldBox.balanceOf(users.alice, DAI_ASSET_ID);
 
         // Fetch total supply
-        stateBeforeWithdrawal.totalSupplyBeforeWithdrawal = yieldBox
-            .totalSupply(DAI_ASSET_ID);
+        stateBeforeWithdrawal.totalSupplyBeforeWithdrawal = yieldBox.totalSupply(DAI_ASSET_ID);
 
         // Fetch strategy asset balance
-        stateBeforeWithdrawal.strategyAssetBalanceBeforeWithdrawal = dai
-            .balanceOf(address(daiStrategy));
+        stateBeforeWithdrawal.strategyAssetBalanceBeforeWithdrawal = dai.balanceOf(address(daiStrategy));
 
         // It should emit a `TransferSingle` event
         vm.expectEmit();
-        emit TransferSingle(
-            users.bob,
-            users.alice,
-            address(0),
-            DAI_ASSET_ID,
-            stateBeforeWithdrawal.expectedShares
-        );
+        emit TransferSingle(users.bob, users.alice, address(0), DAI_ASSET_ID, stateBeforeWithdrawal.expectedShares);
 
         vm.expectEmit();
         emit Withdraw(
-            users.bob,
-            users.alice,
-            users.bob,
-            DAI_ASSET_ID,
-            MEDIUM_AMOUNT,
-            stateBeforeWithdrawal.expectedShares,
-            0,
-            0
+            users.bob, users.alice, users.bob, DAI_ASSET_ID, MEDIUM_AMOUNT, stateBeforeWithdrawal.expectedShares, 0, 0
         );
 
         // Trigger withdrawal
@@ -255,8 +213,7 @@ contract withdraw is YieldBoxUnitConcreteTest {
         // It should decrement `balanceOf` of `from` by `share`
         assertEq(
             stateBeforeWithdrawal.userShareBalanceBeforeWithdrawal,
-            yieldBox.balanceOf(users.alice, DAI_ASSET_ID) +
-                stateBeforeWithdrawal.expectedShares
+            yieldBox.balanceOf(users.alice, DAI_ASSET_ID) + stateBeforeWithdrawal.expectedShares
         );
 
         // It should decrement `totalSupply` by `share`
@@ -275,20 +232,16 @@ contract withdraw is YieldBoxUnitConcreteTest {
     /// @notice Tests the scenario where shares are properly computed given a certain amount managed via an operator for all.
     /// @dev Precondition: Alice has deposited assets.
     /// @dev Precondition: Alice has approved Bob for all
-    function test_withdraw_SharesAreCorrectGivenAmountViaApprovedForAll(
-    )
+    function test_withdraw_SharesAreCorrectGivenAmountViaApprovedForAll()
         public
         whenYieldBoxApprovedForAll(users.alice, users.bob)
         whenDeposited(DAI_ASSET_ID, users.alice, users.alice, LARGE_AMOUNT, 0)
         resetPrank(users.bob)
     {
-
         // Fetch data prior to withdrawing
         StateBeforeWithdrawal memory stateBeforeWithdrawal;
 
-        (stateBeforeWithdrawal.totalShare, stateBeforeWithdrawal.totalAmount) = yieldBox.assetTotals(
-            DAI_ASSET_ID
-        );
+        (stateBeforeWithdrawal.totalShare, stateBeforeWithdrawal.totalAmount) = yieldBox.assetTotals(DAI_ASSET_ID);
 
         // Compute expected shares to withdraw (rounding up for withdrawals)
         stateBeforeWithdrawal.expectedShares = YieldBoxRebase._toShares({
@@ -298,39 +251,22 @@ contract withdraw is YieldBoxUnitConcreteTest {
             roundUp: true
         });
 
-        
         // Fetch impartial user's share balance
-        stateBeforeWithdrawal.userShareBalanceBeforeWithdrawal = yieldBox
-            .balanceOf(users.alice, DAI_ASSET_ID);
+        stateBeforeWithdrawal.userShareBalanceBeforeWithdrawal = yieldBox.balanceOf(users.alice, DAI_ASSET_ID);
 
         // Fetch total supply
-        stateBeforeWithdrawal.totalSupplyBeforeWithdrawal = yieldBox
-            .totalSupply(DAI_ASSET_ID);
+        stateBeforeWithdrawal.totalSupplyBeforeWithdrawal = yieldBox.totalSupply(DAI_ASSET_ID);
 
         // Fetch strategy asset balance
-        stateBeforeWithdrawal.strategyAssetBalanceBeforeWithdrawal = dai
-            .balanceOf(address(daiStrategy));
+        stateBeforeWithdrawal.strategyAssetBalanceBeforeWithdrawal = dai.balanceOf(address(daiStrategy));
 
         // It should emit a `TransferSingle` event
         vm.expectEmit();
-        emit TransferSingle(
-            users.bob,
-            users.alice,
-            address(0),
-            DAI_ASSET_ID,
-            stateBeforeWithdrawal.expectedShares
-        );
+        emit TransferSingle(users.bob, users.alice, address(0), DAI_ASSET_ID, stateBeforeWithdrawal.expectedShares);
 
         vm.expectEmit();
         emit Withdraw(
-            users.bob,
-            users.alice,
-            users.bob,
-            DAI_ASSET_ID,
-            MEDIUM_AMOUNT,
-            stateBeforeWithdrawal.expectedShares,
-            0,
-            0
+            users.bob, users.alice, users.bob, DAI_ASSET_ID, MEDIUM_AMOUNT, stateBeforeWithdrawal.expectedShares, 0, 0
         );
 
         // Trigger withdrawal
@@ -345,8 +281,7 @@ contract withdraw is YieldBoxUnitConcreteTest {
         // It should decrement `balanceOf` of `from` by `share`
         assertEq(
             stateBeforeWithdrawal.userShareBalanceBeforeWithdrawal,
-            yieldBox.balanceOf(users.alice, DAI_ASSET_ID) +
-                stateBeforeWithdrawal.expectedShares
+            yieldBox.balanceOf(users.alice, DAI_ASSET_ID) + stateBeforeWithdrawal.expectedShares
         );
 
         // It should decrement `totalSupply` by `share`
@@ -363,24 +298,19 @@ contract withdraw is YieldBoxUnitConcreteTest {
     }
 
     /// @notice Tests the scenario where amount is properly computed given certain shares.
-    function test_withdraw_AmountIsCorrectGivenShares(
-        uint64 depositAmount,
-        uint64 withdrawShares
-    )
+    function test_withdraw_AmountIsCorrectGivenShares(uint64 depositAmount, uint64 withdrawShares)
         public
         assumeNoZeroValue(depositAmount)
         assumeNoZeroValue(withdrawShares)
         whenDeposited(DAI_ASSET_ID, users.alice, users.alice, 0, depositAmount)
-    { 
+    {
         // Bound withdrawal amount to the max amount deposited
         vm.assume(withdrawShares <= depositAmount);
 
         // Fetch data prior to withdrawing
         StateBeforeWithdrawal memory stateBeforeWithdrawal;
 
-        (stateBeforeWithdrawal.totalShare, stateBeforeWithdrawal.totalAmount) = yieldBox.assetTotals(
-            DAI_ASSET_ID
-        );
+        (stateBeforeWithdrawal.totalShare, stateBeforeWithdrawal.totalAmount) = yieldBox.assetTotals(DAI_ASSET_ID);
 
         // Compute expected amount to withdraw (rounding down for withdrawals)
         stateBeforeWithdrawal.expectedAmount = YieldBoxRebase._toAmount({
@@ -391,26 +321,17 @@ contract withdraw is YieldBoxUnitConcreteTest {
         });
 
         // Fetch impartial user's share balance
-        stateBeforeWithdrawal.userShareBalanceBeforeWithdrawal = yieldBox
-            .balanceOf(users.alice, DAI_ASSET_ID);
+        stateBeforeWithdrawal.userShareBalanceBeforeWithdrawal = yieldBox.balanceOf(users.alice, DAI_ASSET_ID);
 
         // Fetch total supply
-        stateBeforeWithdrawal.totalSupplyBeforeWithdrawal = yieldBox
-            .totalSupply(DAI_ASSET_ID);
+        stateBeforeWithdrawal.totalSupplyBeforeWithdrawal = yieldBox.totalSupply(DAI_ASSET_ID);
 
         // Fetch strategy asset balance
-        stateBeforeWithdrawal.strategyAssetBalanceBeforeWithdrawal = dai
-            .balanceOf(address(daiStrategy));
-            
+        stateBeforeWithdrawal.strategyAssetBalanceBeforeWithdrawal = dai.balanceOf(address(daiStrategy));
+
         // It should emit a `TransferSingle` event
         vm.expectEmit();
-        emit TransferSingle(
-            users.alice,
-            users.alice,
-            address(0),
-            DAI_ASSET_ID,
-            withdrawShares
-        );
+        emit TransferSingle(users.alice, users.alice, address(0), DAI_ASSET_ID, withdrawShares);
 
         vm.expectEmit();
         emit Withdraw(
@@ -455,20 +376,16 @@ contract withdraw is YieldBoxUnitConcreteTest {
     /// @notice Tests the scenario where amount is properly computed given certain shares.
     /// @dev Precondition: Alice has deposited assets.
     /// @dev Precondition: Alice has approved Bob for asset ID
-    function test_withdraw_AmountIsCorrectGivenSharesViaApprovedAssetID(
-    )
+    function test_withdraw_AmountIsCorrectGivenSharesViaApprovedAssetID()
         public
         whenDeposited(DAI_ASSET_ID, users.alice, users.alice, 0, LARGE_AMOUNT)
         whenYieldBoxApprovedForAssetID(users.alice, users.bob, DAI_ASSET_ID)
         resetPrank(users.bob)
-    { 
-
+    {
         // Fetch data prior to withdrawing
         StateBeforeWithdrawal memory stateBeforeWithdrawal;
 
-        (stateBeforeWithdrawal.totalShare, stateBeforeWithdrawal.totalAmount) = yieldBox.assetTotals(
-            DAI_ASSET_ID
-        );
+        (stateBeforeWithdrawal.totalShare, stateBeforeWithdrawal.totalAmount) = yieldBox.assetTotals(DAI_ASSET_ID);
 
         // Compute expected amount to withdraw (rounding down for withdrawals)
         stateBeforeWithdrawal.expectedAmount = YieldBoxRebase._toAmount({
@@ -479,37 +396,21 @@ contract withdraw is YieldBoxUnitConcreteTest {
         });
 
         // Fetch impartial user's share balance
-        stateBeforeWithdrawal.userShareBalanceBeforeWithdrawal = yieldBox
-            .balanceOf(users.alice, DAI_ASSET_ID);
+        stateBeforeWithdrawal.userShareBalanceBeforeWithdrawal = yieldBox.balanceOf(users.alice, DAI_ASSET_ID);
 
         // Fetch total supply
-        stateBeforeWithdrawal.totalSupplyBeforeWithdrawal = yieldBox
-            .totalSupply(DAI_ASSET_ID);
+        stateBeforeWithdrawal.totalSupplyBeforeWithdrawal = yieldBox.totalSupply(DAI_ASSET_ID);
 
         // Fetch strategy asset balance
-        stateBeforeWithdrawal.strategyAssetBalanceBeforeWithdrawal = dai
-            .balanceOf(address(daiStrategy));
-            
+        stateBeforeWithdrawal.strategyAssetBalanceBeforeWithdrawal = dai.balanceOf(address(daiStrategy));
+
         // It should emit a `TransferSingle` event
         vm.expectEmit();
-        emit TransferSingle(
-            users.bob,
-            users.alice,
-            address(0),
-            DAI_ASSET_ID,
-            MEDIUM_AMOUNT
-        );
+        emit TransferSingle(users.bob, users.alice, address(0), DAI_ASSET_ID, MEDIUM_AMOUNT);
 
         vm.expectEmit();
         emit Withdraw(
-            users.bob,
-            users.alice,
-            users.bob,
-            DAI_ASSET_ID,
-            stateBeforeWithdrawal.expectedAmount,
-            MEDIUM_AMOUNT,
-            0,
-            0
+            users.bob, users.alice, users.bob, DAI_ASSET_ID, stateBeforeWithdrawal.expectedAmount, MEDIUM_AMOUNT, 0, 0
         );
 
         // Trigger withdrawal
@@ -543,20 +444,16 @@ contract withdraw is YieldBoxUnitConcreteTest {
     /// @notice Tests the scenario where amount is properly computed given certain shares.
     /// @dev Precondition: Alice has deposited assets.
     /// @dev Precondition: Alice has approved Bob for all
-    function test_withdraw_AmountIsCorrectGivenSharesViaApprovedForAll(
-    )
+    function test_withdraw_AmountIsCorrectGivenSharesViaApprovedForAll()
         public
         whenDeposited(DAI_ASSET_ID, users.alice, users.alice, 0, LARGE_AMOUNT)
         whenYieldBoxApprovedForAll(users.alice, users.bob)
         resetPrank(users.bob)
-    { 
-
+    {
         // Fetch data prior to withdrawing
         StateBeforeWithdrawal memory stateBeforeWithdrawal;
 
-        (stateBeforeWithdrawal.totalShare, stateBeforeWithdrawal.totalAmount) = yieldBox.assetTotals(
-            DAI_ASSET_ID
-        );
+        (stateBeforeWithdrawal.totalShare, stateBeforeWithdrawal.totalAmount) = yieldBox.assetTotals(DAI_ASSET_ID);
 
         // Compute expected amount to withdraw (rounding down for withdrawals)
         stateBeforeWithdrawal.expectedAmount = YieldBoxRebase._toAmount({
@@ -567,37 +464,21 @@ contract withdraw is YieldBoxUnitConcreteTest {
         });
 
         // Fetch impartial user's share balance
-        stateBeforeWithdrawal.userShareBalanceBeforeWithdrawal = yieldBox
-            .balanceOf(users.alice, DAI_ASSET_ID);
+        stateBeforeWithdrawal.userShareBalanceBeforeWithdrawal = yieldBox.balanceOf(users.alice, DAI_ASSET_ID);
 
         // Fetch total supply
-        stateBeforeWithdrawal.totalSupplyBeforeWithdrawal = yieldBox
-            .totalSupply(DAI_ASSET_ID);
+        stateBeforeWithdrawal.totalSupplyBeforeWithdrawal = yieldBox.totalSupply(DAI_ASSET_ID);
 
         // Fetch strategy asset balance
-        stateBeforeWithdrawal.strategyAssetBalanceBeforeWithdrawal = dai
-            .balanceOf(address(daiStrategy));
-            
+        stateBeforeWithdrawal.strategyAssetBalanceBeforeWithdrawal = dai.balanceOf(address(daiStrategy));
+
         // It should emit a `TransferSingle` event
         vm.expectEmit();
-        emit TransferSingle(
-            users.bob,
-            users.alice,
-            address(0),
-            DAI_ASSET_ID,
-            MEDIUM_AMOUNT
-        );
+        emit TransferSingle(users.bob, users.alice, address(0), DAI_ASSET_ID, MEDIUM_AMOUNT);
 
         vm.expectEmit();
         emit Withdraw(
-            users.bob,
-            users.alice,
-            users.bob,
-            DAI_ASSET_ID,
-            stateBeforeWithdrawal.expectedAmount,
-            MEDIUM_AMOUNT,
-            0,
-            0
+            users.bob, users.alice, users.bob, DAI_ASSET_ID, stateBeforeWithdrawal.expectedAmount, MEDIUM_AMOUNT, 0, 0
         );
 
         // Trigger withdrawal
