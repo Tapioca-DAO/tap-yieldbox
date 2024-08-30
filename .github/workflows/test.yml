@@ -20,6 +20,20 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Setup yarn
+        shell: bash
+        run: npm install -g yarn
+      
+      - name: Setup Node.js with yarn caching
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18.16.0"
+          cache: yarn
+
+      - name: Install Yarn dependencies
+        shell: bash
+        run: yarn
+
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
         with:
